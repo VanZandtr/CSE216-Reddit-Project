@@ -73,14 +73,26 @@ public class Database {
          * The message stored in this row
          */
         String mMessage;
+        
+
+        /**
+         * The username stored in this row
+         */
+        String mUsername;//added
+        /**
+         * The number of likes stored in this row
+         */
+        int mLikes;//added
 
         /**
          * Construct a RowData object by providing values for its fields
          */
-        public RowData(int id, String subject, String message) {
+        public RowData(int id, String subject, String message, String username, int likes) {
             mId = id;
             mSubject = subject;
             mMessage = message;
+            mUsername = username; //added
+            mLikes = likes;//added
         }
     }
 
@@ -102,10 +114,38 @@ public class Database {
      * 
      * @return A Database object, or null if we cannot connect properly
      */
-    static Database getDatabase(String ip, String port, String user, String pass) {
+    
+    // static Database getDatabase(String ip, String port, String user, String pass) {
+    static Database getDatabase(String db_url) {
+
         // Create an un-configured Database object
         Database db = new Database();
 
+        //Give the Database object a connection, fail if we cannot get one
+        try {
+            Class.forName("org.postgresql.Driver");
+            URI dbUri = new URI(db_url);
+            String username = dbUri.getUserInfo().split(":")[0];
+            String password = dbUri.getUserInfo().split(":")[1];
+            String dbUrl = "jdbc:postgresql://" + dbUri.getHost() + ':' + dbUri.getPort() + dbUri.getPath();
+            Connection conn = DriverManager.getConnection(dbUrl, username, password);
+            if (conn == null) {
+                System.err.println("Error: DriverManager.getConnection() returned a null object");
+                return null;
+            }
+            db.mConnection = conn;
+        } catch (SQLException e) {
+            System.err.println("Error: DriverManager.getConnection() threw a SQLException");
+            e.printStackTrace();
+            return null;
+        } catch (ClassNotFoundException cnfe) {
+            System.out.println("Unable to find postgresql driver");
+            return null;
+        } catch (URISyntaxException s) {
+            System.out.println("URI Syntax Error");
+            return null;
+        }
+/*
         // Give the Database object a connection, fail if we cannot get one
         try {
             Connection conn = DriverManager.getConnection("jdbc:postgresql://" + ip + ":" + port + "/", user, pass);
@@ -119,7 +159,7 @@ public class Database {
             e.printStackTrace();
             return null;
         }
-
+*/
         // Attempt to create all of our prepared statements.  If any of these 
         // fail, the whole getDatabase() call should fail
         try {
@@ -131,16 +171,15 @@ public class Database {
             // Note: no "IF NOT EXISTS" or "IF EXISTS" checks on table 
             // creation/deletion, so multiple executions will cause an exception
             db.mCreateTable = db.mConnection.prepareStatement(
-                    "CREATE TABLE tblData (id SERIAL PRIMARY KEY, subject VARCHAR(50) "
-                    + "NOT NULL, message VARCHAR(500) NOT NULL)");
+                    "CREATE TABLE tblData (id SERIAL PRIMARY KEY, subject VARCHAR(50) " + "NOT NULL, message VARCHAR(500) NOT NULL, username VARCHAR(50), likes INT)");//added
             db.mDropTable = db.mConnection.prepareStatement("DROP TABLE tblData");
 
             // Standard CRUD operations
             db.mDeleteOne = db.mConnection.prepareStatement("DELETE FROM tblData WHERE id = ?");
-            db.mInsertOne = db.mConnection.prepareStatement("INSERT INTO tblData VALUES (default, ?, ?)");
-            db.mSelectAll = db.mConnection.prepareStatement("SELECT id, subject FROM tblData");
+            db.mInsertOne = db.mConnection.prepareStatement("INSERT INTO tblData VALUES (default, ?, ?, ?, ?)");//added 2 ?'s'
+            db.mSelectAll = db.mConnection.prepareStatement("SELECT id, subject, username, likes FROM tblData");//added
             db.mSelectOne = db.mConnection.prepareStatement("SELECT * from tblData WHERE id=?");
-            db.mUpdateOne = db.mConnection.prepareStatement("UPDATE tblData SET message = ? WHERE id = ?");
+            db.mUpdateOne = db.mConnection.prepareStatement("UPDATE tblData SET message = ?, likes = ? WHERE id = ?");
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement");
             e.printStackTrace();
@@ -180,14 +219,18 @@ public class Database {
      * 
      * @param subject The subject for this new row
      * @param message The message body for this new row
+     * @param username The username associated with the message
+     * @param likes The number of likes for this row
      * 
      * @return The number of rows that were inserted
      */
-    int insertRow(String subject, String message) {
+    int insertRow(String subject, String message, String username, int likes) {//added
         int count = 0;
         try {
             mInsertOne.setString(1, subject);
             mInsertOne.setString(2, message);
+            mInsertOne.setString(3, username);//added - the username
+            mInsertOne.setInt(4, 0); //added - likes start out at 0
             count += mInsertOne.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -205,7 +248,7 @@ public class Database {
         try {
             ResultSet rs = mSelectAll.executeQuery();
             while (rs.next()) {
-                res.add(new RowData(rs.getInt("id"), rs.getString("subject"), null));
+                res.add(new RowData(rs.getInt("id"), rs.getString("subject"), null, rs.getString("username"), rs.getInt("likes")));//added
             }
             rs.close();
             return res;
@@ -228,7 +271,7 @@ public class Database {
             mSelectOne.setInt(1, id);
             ResultSet rs = mSelectOne.executeQuery();
             if (rs.next()) {
-                res = new RowData(rs.getInt("id"), rs.getString("subject"), rs.getString("message"));
+                res = new RowData(rs.getInt("id"), rs.getString("subject"), rs.getString("message"), rs.getString("username"), rs.getInt("likes"));//added
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -262,11 +305,12 @@ public class Database {
      * 
      * @return The number of rows that were updated.  -1 indicates an error.
      */
-    int updateOne(int id, String message) {
+    int updateOne(int id, String message, int likes) {
         int res = -1;
         try {
             mUpdateOne.setString(1, message);
-            mUpdateOne.setInt(2, id);
+            mUpdateOne.setInt(2, likes);
+            mUpdateOne.setInt(3, id);
             res = mUpdateOne.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();

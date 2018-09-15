@@ -107,14 +107,19 @@ public class App {
     public static void main(String[] argv) {
         // get the Postgres configuration from the environment
         Map<String, String> env = System.getenv();
-        String ip = env.get("POSTGRES_IP");
-        String port = env.get("POSTGRES_PORT");
-        String user = env.get("POSTGRES_USER");
-        String pass = env.get("POSTGRES_PASS");
+        //String ip = env.get("POSTGRES_IP");
+        //String port = env.get("POSTGRES_PORT");
+        //String user = env.get("POSTGRES_USER");
+        //String pass = env.get("POSTGRES_PASS");
+
+        String db_url = env.get("DATABASE_URL");
+        db_url += "?sslmode=require";
+
 
         // Get a fully-configured connection to the database, or exit
         // immediately
-        Database db = Database.getDatabase(ip, port, user, pass);
+        //Database db = Database.getDatabase(ip, port, user, pass);
+        Database db = Database.getDatabase(db_url);
         if (db == null)
             return;
 
@@ -140,8 +145,8 @@ public class App {
                     continue;
                 Database.RowData res = db.selectOne(id);
                 if (res != null) {
-                    System.out.println("  [" + res.mId + "] " + res.mSubject);
-                    System.out.println("  --> " + res.mMessage);
+                    System.out.println("  [" + res.mId + "] " + "["+res.mUsername+"] "+ res.mSubject ); //added
+                    System.out.println("  --> " + res.mMessage +" [" + res.mLikes+"]"); //added
                 }
             } else if (action == '*') {
                 ArrayList<Database.RowData> res = db.selectAll();
@@ -150,7 +155,7 @@ public class App {
                 System.out.println("  Current Database Contents");
                 System.out.println("  -------------------------");
                 for (Database.RowData rd : res) {
-                    System.out.println("  [" + rd.mId + "] " + rd.mSubject);
+                    System.out.println("  [" + rd.mId + "] "+ "["+rd.mUsername+"] " + rd.mSubject +" [" + rd.mLikes+"]");//added
                 }
             } else if (action == '-') {
                 int id = getInt(in, "Enter the row ID");
@@ -163,16 +168,20 @@ public class App {
             } else if (action == '+') {
                 String subject = getString(in, "Enter the subject");
                 String message = getString(in, "Enter the message");
+                //String username = db.username.split(":")[0];
+                String username = user;//added
+                int likes = 0;//added
                 if (subject.equals("") || message.equals(""))
                     continue;
-                int res = db.insertRow(subject, message);
+                int res = db.insertRow(subject, message, username, likes);//added
                 System.out.println(res + " rows added");
             } else if (action == '~') {
                 int id = getInt(in, "Enter the row ID :> ");
                 if (id == -1)
                     continue;
                 String newMessage = getString(in, "Enter the new message");
-                int res = db.updateOne(id, newMessage);
+                int newLikes = getInt(in, "Enter the new amount of likes");
+                int res = db.updateOne(id, newMessage, newLikes);
                 if (res == -1)
                     continue;
                 System.out.println("  " + res + " rows updated");
