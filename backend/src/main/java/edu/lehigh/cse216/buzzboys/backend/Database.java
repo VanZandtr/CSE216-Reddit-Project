@@ -51,14 +51,79 @@ public class Database {
     private PreparedStatement mDropTable;
 
     /**
-     * DataRow is like a struct in C: we use it to hold data, and we allow 
-     * direct access to its fields.  In the context of this Database, DataRow 
+     * RowData is like a struct in C: we use it to hold data, and we allow 
+     * direct access to its fields.  In the context of this Database, RowData 
      * represents the data we'd see in a row.
      * 
-     * We make DataRow a static class of Database because we don't really want
-     * to encourage users to think of DataRow as being anything other than an
-     * abstract representation of a row of the database. DataRow and the 
-     * Database are tightly coupled: if one changes, the other should too.
+     * We make RowData a static abstract class of Database because we don't really want
+     * to encourage users to think of RowData as being anything other than an
+     * abstract representation of a row of the database ,and it will be used in
+     * with msg and user subclasses
+     * RowData and the Database are tightly coupled: if one changes, the other should too.
+     */
+    public static abstract class RowData {
+        /**
+         * The ID of this row of the database
+         */
+        int id;
+
+        public RowData(int newId) {
+            id = newId;
+        }
+
+        public int getId() {
+            return id;
+        }
+    }
+    /**
+     * Created a MsgData subclass of RowData because format is more specific
+     */
+    public static class MsgData extends RowData {
+        /**
+         * The subject stored in this row
+         */
+        String mSubject;
+        /**
+         * The message stored in this row
+         */
+        String mMessage;
+
+        /**
+         * Construct a RowData object by providing values for its fields
+         */
+        public MsgData(int id, String subject, String message) {
+            super(id);
+            mSubject = subject;
+            mMessage = message;
+        }
+
+        public String getSubject() {
+            return mSubject;
+        }
+
+        public String getMessage() {
+            return mMessage;
+        }
+    }
+
+    public static class UserData extends RowData {
+        /**
+         * The name is store in this row
+         */
+        String uName;
+
+        public UserData(int id, String name) {
+            super(id);
+            uName = name;
+        }
+
+        public String getName() {
+            return uName;
+        }
+    }
+
+    /**
+     * 
      */
 
     /**
@@ -79,7 +144,7 @@ public class Database {
      * 
      * @return A Database object, or null if we cannot connect properly
      */
-    static Database getDatabase(String ip, String port, String user, String pass) {
+    public static Database getDatabase(String ip, String port, String user, String pass) {
         // Create an un-configured Database object
         Database db = new Database();
 
@@ -110,6 +175,7 @@ public class Database {
             db.mCreateTable = db.mConnection.prepareStatement(
                     "CREATE TABLE tblData (id SERIAL PRIMARY KEY, subject VARCHAR(50) "
                     + "NOT NULL, message VARCHAR(500) NOT NULL)");
+            
             db.mDropTable = db.mConnection.prepareStatement("DROP TABLE tblData");
 
             // Standard CRUD operations
@@ -117,13 +183,21 @@ public class Database {
             db.mInsertOne = db.mConnection.prepareStatement("INSERT INTO tblData VALUES (default, ?, ?)");
             db.mSelectAll = db.mConnection.prepareStatement("SELECT id, subject FROM tblData");
             db.mSelectOne = db.mConnection.prepareStatement("SELECT * from tblData WHERE id=?");
-            db.mUpdateOne = db.mConnection.prepareStatement("UPDATE tblData SET message = ? WHERE id = ?");
+            db.mUpdateOne = db.mConnection.prepareStatement("UPDATE tblData SET subject = ?, message = ? WHERE id = ?");
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement");
             e.printStackTrace();
             db.disconnect();
             return null;
         }
+
+        try {
+            //db.mDropTable.execute(); //add an if table exists
+            db.mCreateTable.execute();
+        } catch(SQLException e1) {
+            System.out.println("Error creating movie table");
+        }
+        
         return db;
     }
 
@@ -160,8 +234,8 @@ public class Database {
      * 
      * @return The number of rows that were inserted
      */
-    int insertRow(String subject, String message) {
-        int count = 0;
+    public int insertRow(String subject, String message) {
+        int count = -1;
         try {
             mInsertOne.setString(1, subject);
             mInsertOne.setString(2, message);
@@ -177,12 +251,12 @@ public class Database {
      * 
      * @return All rows, as an ArrayList
      */
-    ArrayList<DataRow> selectAll() {
-        ArrayList<DataRow> res = new ArrayList<DataRow>();
+    public ArrayList<RowData> selectAll() {
+        ArrayList<RowData> res = new ArrayList<RowData>();
         try {
             ResultSet rs = mSelectAll.executeQuery();
             while (rs.next()) {
-                res.add(new DataRow(rs.getInt("id"), rs.getString("subject"), null));
+                res.add(new RowData(rs.getInt("id"), rs.getString("subject"), null));
             }
             rs.close();
             return res;
@@ -199,13 +273,13 @@ public class Database {
      * 
      * @return The data for the requested row, or null if the ID was invalid
      */
-    DataRow selectOne(int id) {
-        DataRow res = null;
+    public RowData selectOne(int id) {
+        RowData res = null;
         try {
             mSelectOne.setInt(1, id);
             ResultSet rs = mSelectOne.executeQuery();
             if (rs.next()) {
-                res = new DataRow(rs.getInt("id"), rs.getString("subject"), rs.getString("message"));
+                res = new RowData(rs.getInt("id"), rs.getString("subject"), rs.getString("message"));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -220,7 +294,7 @@ public class Database {
      * 
      * @return The number of rows that were deleted.  -1 indicates an error.
      */
-    int deleteRow(int id) {
+    public int deleteRow(int id) {
         int res = -1;
         try {
             mDeleteOne.setInt(1, id);
@@ -239,11 +313,12 @@ public class Database {
      * 
      * @return The number of rows that were updated.  -1 indicates an error.
      */
-    int updateOne(int id, String message) {
+    public int updateOne(int id, String subject, String message) {
         int res = -1;
         try {
-            mUpdateOne.setString(1, message);
-            mUpdateOne.setInt(2, id);
+            mUpdateOne.setString(1, subject);
+            mUpdateOne.setString(2, message);
+            mUpdateOne.setInt(3, id);
             res = mUpdateOne.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
