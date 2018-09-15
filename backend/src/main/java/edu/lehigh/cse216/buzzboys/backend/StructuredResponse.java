@@ -3,6 +3,7 @@ package edu.lehigh.cse216.buzzboys.backend;
 /**
  * StructuredResponse provides a common format for success and failure messages,
  * with an optional payload of type Object that can be converted into JSON.
+ * 
  * NB: since this will be converted into JSON, all fields must be public.
  */
 public class StructuredResponse {
@@ -27,6 +28,7 @@ public class StructuredResponse {
     /**
      * Construct a StructuredResponse by providing a status, message, and data.
      * If the status is not provided, set it to "invalid".
+     * 
      * @param status The status of the response, typically "ok" or "error"
      * @param message The message to go along with an error status
      * @param object An object with additional data to send to the client
