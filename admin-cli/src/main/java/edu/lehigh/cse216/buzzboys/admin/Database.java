@@ -56,7 +56,7 @@ public class Database {
     /**
      * Added a global username variable in order to retain Heroku's username
      */
-    String globalUsername;
+    String globalUsername = "global_username";
 
     /**
      * RowData is like a struct in C: we use it to hold data, and we allow 
@@ -147,12 +147,12 @@ public class Database {
      * @return A Database object, or null if we cannot connect properly
      */
     
-    // static Database getDatabase(String ip, String port, String user, String pass) {
-    static Database getDatabase(String db_url) {
+    static Database getDatabase(String ip, String port, String user, String pass) {
+    //static Database getDatabase(String db_url) {
 
         // Create an un-configured Database object
         Database db = new Database();
-
+/*
         //Give the Database object a connection, fail if we cannot get one
         try {
             Class.forName("org.postgresql.Driver");
@@ -178,7 +178,7 @@ public class Database {
             System.out.println("URI Syntax Error");
             return null;
         }
-/*
+*/
         // Give the Database object a connection, fail if we cannot get one
         try {
             Connection conn = DriverManager.getConnection("jdbc:postgresql://" + ip + ":" + port + "/", user, pass);
@@ -192,7 +192,7 @@ public class Database {
             e.printStackTrace();
             return null;
         }
-*/
+
         // Attempt to create all of our prepared statements.  If any of these 
         // fail, the whole getDatabase() call should fail
         try {
@@ -204,27 +204,23 @@ public class Database {
             // Note: no "IF NOT EXISTS" or "IF EXISTS" checks on table 
             // creation/deletion, so multiple executions will cause an exception
             db.mCreateMessageTable = db.mConnection.prepareStatement(
-                    "CREATE TABLE messages (id SERIAL PRIMARY KEY, subject VARCHAR(50) " + "NOT NULL, message VARCHAR(500) NOT NULL, upvotes INT, downvotes INT)");//added
-            
+                    "CREATE TABLE messages (id SERIAL PRIMARY KEY, subject VARCHAR(50) " + "NOT NULL, message VARCHAR(500) NOT NULL," + "username VARCHAR(20) NOT NULL," + "upvotes INT NOT NULL," + " downvotes INT NOT NULL)");//added
             db.mCreateUserTable = db.mConnection.prepareStatement(
-                    "CREATE TABLE users (id SERIAL PRIMARY KEY, username VARCHAR(50)");//added
-
+                    //"CREATE TABLE users (id SERIAL PRIMARY KEY, username VARCHAR(50) NOT NULL");//added
+                    "CREATE TABLE users(id SERIAL PRIMARY KEY, username VARCHAR(20) " + "NOT NULL)");
             db.mDropUsersTable = db.mConnection.prepareStatement("DROP TABLE users");
-
             db.mDropMessagesTable = db.mConnection.prepareStatement("DROP TABLE messages");
-
-
             // Standard CRUD operations
             db.mDeleteOneMessage = db.mConnection.prepareStatement("DELETE FROM messages WHERE id = ?");
             db.mDeleteOneUser = db.mConnection.prepareStatement("DELETE FROM users WHERE id = ?");
             db.mInsertOneMessage = db.mConnection.prepareStatement("INSERT INTO messages VALUES (default, ?, ?, ?, ?, ?)");//added 2 ?'s'
             db.mInsertOneUser = db.mConnection.prepareStatement("INSERT INTO users VALUES (default, ?)");//added 2
-            db.mSelectAllFromMessages = db.mConnection.prepareStatement("SELECT id, subject, username, likes FROM messages");//added
-            db.mSelectAllFromUsers = db.mConnection.prepareStatement("SELECT id, username FROM usernames");//added
+            db.mSelectAllFromMessages = db.mConnection.prepareStatement("SELECT id, subject, username, upvotes, downvotes FROM messages");//added
+            db.mSelectAllFromUsers = db.mConnection.prepareStatement("SELECT id, username FROM users");//added
             db.mSelectOneMessage = db.mConnection.prepareStatement("SELECT * from messages WHERE id=?");
             db.mSelectOneUser = db.mConnection.prepareStatement("SELECT * from users WHERE id=?");
             db.mUpdateOneMessage = db.mConnection.prepareStatement("UPDATE messages SET message = ?, username = ?, upvotes = ?, downvotes = ? WHERE id = ?");
-            db.mUpdateOneUser = db.mConnection.prepareStatement("UPDATE users SET username = ?, WHERE id = ?");
+            db.mUpdateOneUser = db.mConnection.prepareStatement("UPDATE users SET username = ? WHERE id = ?");
 
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement");
@@ -266,7 +262,6 @@ public class Database {
      * @param subject The subject for this new row
      * @param message The message body for this new row
      * @param username The username associated with the message
-     * @param likes The number of likes for this row
      * 
      * @return The number of rows that were inserted
      */
@@ -275,7 +270,7 @@ public class Database {
         try {
             mInsertOneMessage.setString(1, subject);
             mInsertOneMessage.setString(2, message);
-            mInsertOneMessage.setString(3, username); //added - likes start out at 0
+            mInsertOneMessage.setString(3, username); //added
             mInsertOneMessage.setInt(4, 0);
             mInsertOneMessage.setInt(5, 0);
             count += mInsertOneMessage.executeUpdate();
@@ -324,7 +319,7 @@ public class Database {
     ArrayList<UserRowData> selectAllFromUsers() {
         ArrayList<UserRowData> res = new ArrayList<UserRowData>();
         try {
-            ResultSet rs = mSelectAllFromMessages.executeQuery();
+            ResultSet rs = mSelectAllFromUsers.executeQuery();
             while (rs.next()) {
                 res.add(new UserRowData(rs.getInt("id"), rs.getString("username")));//added
             }
@@ -408,13 +403,14 @@ public class Database {
      * 
      * @return The number of rows that were updated.  -1 indicates an error.
      */
-    int updateOneMessage(int id, String message, int upvotes, int downvotes) {
+    int updateOneMessage(int id, String message, String username, int upvotes, int downvotes) {
         int res = -1;
         try {
             mUpdateOneMessage.setString(1, message);
-            mUpdateOneMessage.setInt(2, upvotes);
-            mUpdateOneMessage.setInt(3, downvotes);
-            mUpdateOneMessage.setInt(4, id);
+            mUpdateOneMessage.setString(2, username);
+            mUpdateOneMessage.setInt(3, upvotes);
+            mUpdateOneMessage.setInt(4, downvotes);
+            mUpdateOneMessage.setInt(5, id);
             res = mUpdateOneMessage.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -426,7 +422,7 @@ public class Database {
         int res = -1;
         try {
             mUpdateOneUser.setString(1, username);
-            mUpdateOneUser.setInt(4, id);
+            mUpdateOneUser.setInt(2, id);
             res = mUpdateOneUser.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -437,7 +433,7 @@ public class Database {
     /**
      * Create user table.  If it already exists, this will print an error
      */
-    void createUserTable() {
+    void createUsersTable() {
         try {
             mCreateUserTable.execute();
         } catch (SQLException e) {
@@ -448,7 +444,7 @@ public class Database {
     /**
      * Create message table.  If it already exists, this will print an error
      */
-    void createMessageTable() {
+    void createMessagesTable() {
         try {
             mCreateMessageTable.execute();
         } catch (SQLException e) {

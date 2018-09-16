@@ -18,14 +18,18 @@ public class App {
      */
     static void menu() {
         System.out.println("Main Menu");
-        System.out.println("  [T] Create user and message table");
-        System.out.println("  [DU] Drop User Table");
-        System.out.println("  [DM] Drop Message Table");
-        System.out.println("  [1] Query for a specific row");
-        System.out.println("  [*] Query for all rows");
-        System.out.println("  [-] Delete a row");
-        System.out.println("  [+] Insert a new row");
-        System.out.println("  [~] Update a row");
+        System.out.println("  [T] Create tables (Users and Messages)");
+        System.out.println("  [D] Drop tables (Users and Messages");
+        System.out.println("  [1] Query for a specific row in Messages");
+        System.out.println("  [2] Query for a specific row in Users");
+        System.out.println("  [3] Query for all rows in Messages");
+        System.out.println("  [4] Query for all rows in Users");
+        System.out.println("  [5] Delete a row in Messages");
+        System.out.println("  [6] Delete a row in Users");
+        System.out.println("  [7] Insert a new row in Messages");
+        System.out.println("  [8] Insert a new row in Users");
+        System.out.println("  [9] Update a row in Messages");
+        System.out.println("  [0] Update a row in Users");
         System.out.println("  [q] Quit Program");
         System.out.println("  [?] Help (this message)");
     }
@@ -37,8 +41,7 @@ public class App {
      */
     static char prompt(BufferedReader in) {
         // The valid actions:
-        String actions = "TD1*-+~q?";
-
+        String actions = "TDq?1234567890";
         // We repeat until a valid single-character option is selected
         while (true) {
             System.out.print("[" + actions + "] :> ");
@@ -49,8 +52,10 @@ public class App {
                 e.printStackTrace();
                 continue;
             }
-            if (action.length() != 1)
+            if (action.length() != 1){
+                System.out.println("Command are one character.");
                 continue;
+            }
             if (actions.contains(action)) {
                 return action.charAt(0);
             }
@@ -108,19 +113,19 @@ public class App {
     public static void main(String[] argv) {
         // get the Postgres configuration from the environment
         Map<String, String> env = System.getenv();
-        //String ip = env.get("POSTGRES_IP");
-        //String port = env.get("POSTGRES_PORT");
-        //String user = env.get("POSTGRES_USER");
-        //String pass = env.get("POSTGRES_PASS");
+        String ip = env.get("POSTGRES_IP");
+        String port = env.get("POSTGRES_PORT");
+        String user = env.get("POSTGRES_USER");
+        String pass = env.get("POSTGRES_PASS");
 
-        String db_url = env.get("DATABASE_URL");
-        db_url += "?sslmode=require";
+        //String db_url = env.get("DATABASE_URL");
+        //db_url += "?sslmode=require";
 
 
         // Get a fully-configured connection to the database, or exit
         // immediately
-        //Database db = Database.getDatabase(ip, port, user, pass);
-        Database db = Database.getDatabase(db_url);
+        Database db = Database.getDatabase(ip, port, user, pass);
+        //Database db = Database.getDatabase(db_url);
         if (db == null)
             return;
 
@@ -137,52 +142,96 @@ public class App {
             } else if (action == 'q') {
                 break;
             } else if (action == 'T') {
-                db.createMessageTable();
-                db.createUserTable();
+                db.createUsersTable();
+                db.createMessagesTable();
             } else if (action == 'D') {
-                db.dropTable();
+                db.dropMessagesTable();
+                db.dropUsersTable();
             } else if (action == '1') {
                 int id = getInt(in, "Enter the row ID");
                 if (id == -1)
                     continue;
-                Database.RowData res = db.selectOne(id);
+                Database.MessageRowData res = db.selectOneMessage(id);
                 if (res != null) {
                     System.out.println("  [" + res.mId + "] " + "["+res.mUsername+"] "+ res.mSubject ); //added
-                    System.out.println("  --> " + res.mMessage +" [" + res.mLikes+"]"); //added
+                    System.out.println("  --> " + res.mMessage +" [" + res.mUpvotes + "/"+ res.mDownvotes+"]"); //added
                 }
-            } else if (action == '*') {
-                ArrayList<Database.RowData> res = db.selectAll();
+            } else if (action == '2'){
+                int id = getInt(in, "Enter the row ID");
+                if (id == -1)
+                    continue;
+                Database.UserRowData res = db.selectOneUser(id);
+                if (res != null) {
+                    System.out.println("  [" + res.mId + "] " + res.mUsername);
+                }
+            }else if (action == '3') {
+                ArrayList<Database.MessageRowData> res = db.selectAllFromMessages();
                 if (res == null)
                     continue;
                 System.out.println("  Current Database Contents");
                 System.out.println("  -------------------------");
-                for (Database.RowData rd : res) {
-                    System.out.println("  [" + rd.mId + "] "+ "["+rd.mUsername+"] " + rd.mSubject +" [" + rd.mLikes+"]");//added
+                for (Database.MessageRowData rd : res) {
+                    System.out.println("  [" + rd.mId + "] "+ "["+rd.mUsername+"] " + rd.mSubject +" [" + rd.mUpvotes + "/"+ rd.mDownvotes+"]");//added
                 }
-            } else if (action == '-') {
+            } else if (action == '4') {
+                ArrayList<Database.UserRowData> res = db.selectAllFromUsers();
+                if (res == null)
+                    continue;
+                System.out.println("  Current Database Contents");
+                System.out.println("  -------------------------");
+                for (Database.UserRowData rd : res) {
+                    System.out.println("  [" + rd.mId + "] "+ rd.mUsername);//added
+                }
+            }else if (action == '5') {
                 int id = getInt(in, "Enter the row ID");
                 if (id == -1)
                     continue;
-                int res = db.deleteRow(id);
+                int res = db.deleteMessageRow(id);
                 if (res == -1)
                     continue;
                 System.out.println("  " + res + " rows deleted");
-            } else if (action == '+') {
+            }else if (action == '6') {
+                int id = getInt(in, "Enter the row ID");
+                if (id == -1)
+                    continue;
+                int res = db.deleteUserRow(id);
+                if (res == -1)
+                    continue;
+                System.out.println("  " + res + " rows deleted");
+            }else if (action == '7') {
                 String subject = getString(in, "Enter the subject");
                 String message = getString(in, "Enter the message");
                 String username = db.globalUsername;//added
-                int likes = 0;//added
-                if (subject.equals("") || message.equals(""))
+                int upvotes = 0;//added
+                int downvotes = 0;
+                if (subject.equals("") || message.equals("") || username == null)
                     continue;
-                int res = db.insertRow(subject, message, username, likes);//added
+                int res = db.insertMessageRow(subject, message, username, upvotes, downvotes);//added
                 System.out.println(res + " rows added");
-            } else if (action == '~') {
+            } else if (action == '8') {
+                String username = db.globalUsername;//added
+                if (username == null)
+                    continue;
+                int res = db.insertUserRow(username);//added
+                System.out.println(res + " rows added");
+            }else if (action == '9') {
                 int id = getInt(in, "Enter the row ID :> ");
                 if (id == -1)
                     continue;
-                String newMessage = getString(in, "Enter the new message");
-                int newLikes = getInt(in, "Enter the new amount of likes");
-                int res = db.updateOne(id, newMessage, newLikes);
+                String message = getString(in, "Enter the new message");
+                int upvotes = getInt(in, "Enter the new amount of upvotes");
+                int downvotes = getInt(in, "Enter the new amount of downvotes");
+                String username = db.globalUsername;
+                int res = db.updateOneMessage(id, message, username, upvotes, downvotes);
+                if (res == -1)
+                    continue;
+                System.out.println("  " + res + " rows updated");
+            }else if (action == '0') {
+                int id = getInt(in, "Enter the row ID :> ");
+                if (id == -1)
+                    continue;
+                String username = getString(in, "Enter the new username");
+                int res = db.updateOneUser(id, username);
                 if (res == -1)
                     continue;
                 System.out.println("  " + res + " rows updated");
