@@ -168,8 +168,7 @@ public class App {
             } else if (action == '+') {
                 String subject = getString(in, "Enter the subject");
                 String message = getString(in, "Enter the message");
-                //String username = db.username.split(":")[0];
-                String username = user;//added
+                String username = db.globalUsername;//added
                 int likes = 0;//added
                 if (subject.equals("") || message.equals(""))
                     continue;

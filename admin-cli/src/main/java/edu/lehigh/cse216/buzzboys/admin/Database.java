@@ -5,6 +5,8 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import java.util.ArrayList;
 
@@ -49,6 +51,11 @@ public class Database {
      * A prepared statement for dropping the table in our database
      */
     private PreparedStatement mDropTable;
+    
+    /**
+     * Added a global username variable in order to retain Heroku's username
+     */
+    String globalUsername;
 
     /**
      * RowData is like a struct in C: we use it to hold data, and we allow 
@@ -126,6 +133,7 @@ public class Database {
             Class.forName("org.postgresql.Driver");
             URI dbUri = new URI(db_url);
             String username = dbUri.getUserInfo().split(":")[0];
+            db.globalUsername = username;//added to be able to use username
             String password = dbUri.getUserInfo().split(":")[1];
             String dbUrl = "jdbc:postgresql://" + dbUri.getHost() + ':' + dbUri.getPort() + dbUri.getPath();
             Connection conn = DriverManager.getConnection(dbUrl, username, password);
