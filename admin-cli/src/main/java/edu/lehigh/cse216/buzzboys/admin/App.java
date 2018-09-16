@@ -18,8 +18,9 @@ public class App {
      */
     static void menu() {
         System.out.println("Main Menu");
-        System.out.println("  [T] Create tblData");
-        System.out.println("  [D] Drop tblData");
+        System.out.println("  [T] Create user and message table");
+        System.out.println("  [DU] Drop User Table");
+        System.out.println("  [DM] Drop Message Table");
         System.out.println("  [1] Query for a specific row");
         System.out.println("  [*] Query for all rows");
         System.out.println("  [-] Delete a row");
@@ -136,7 +137,8 @@ public class App {
             } else if (action == 'q') {
                 break;
             } else if (action == 'T') {
-                db.createTable();
+                db.createMessageTable();
+                db.createUserTable();
             } else if (action == 'D') {
                 db.dropTable();
             } else if (action == '1') {
