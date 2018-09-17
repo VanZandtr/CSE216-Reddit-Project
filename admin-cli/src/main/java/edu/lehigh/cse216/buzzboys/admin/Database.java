@@ -26,6 +26,9 @@ public class Database {
     private PreparedStatement mSelectAllFromUsers;
 
     private PreparedStatement mUpdateOneMessage;
+    private PreparedStatement mUpdateOneMessageUp;
+    private PreparedStatement mUpdateOneMessageDown;
+
     
     private PreparedStatement mUpdateOneUser;
 
@@ -36,6 +39,20 @@ public class Database {
     private PreparedStatement mSelectOneMessage;
 
     private PreparedStatement mSelectOneUser;
+
+    private PreparedStatement mCreateVoteTable;
+
+    private PreparedStatement mInsertVote;
+
+    private PreparedStatement mDeleteVote;
+
+    private PreparedStatement mSelectOneVote;
+
+    private PreparedStatement mSelectAllFromVotes;
+    private PreparedStatement mSelectOneMessageIDVote;
+
+
+
 
     /**
      * A prepared statement for deleting a row from the database
@@ -125,6 +142,31 @@ public class Database {
         }
     }
 
+    public static class VoteRowData {
+        /**
+         * The ID of this row of the database
+         */
+        int mId;
+
+        int mMessage_Id;
+        /**
+         * The username stored in this row
+         */
+        String mUsername;//added
+
+        int mIs_upvote;
+
+        /**
+         * Construct a RowData object by providing values for its fields
+         */
+        public VoteRowData(int id, int message_id, String username, int is_upvote) {
+            mId = id;
+            mUsername = username;
+            mIs_upvote = is_upvote;
+            mMessage_Id = message_id;
+        }
+    }
+
 
 
 
@@ -206,8 +248,9 @@ public class Database {
             db.mCreateMessageTable = db.mConnection.prepareStatement(
                     "CREATE TABLE messages (id SERIAL PRIMARY KEY, subject VARCHAR(50) " + "NOT NULL, message VARCHAR(500) NOT NULL," + "username VARCHAR(20) NOT NULL," + "upvotes INT NOT NULL," + " downvotes INT NOT NULL)");//added
             db.mCreateUserTable = db.mConnection.prepareStatement(
-                    //"CREATE TABLE users (id SERIAL PRIMARY KEY, username VARCHAR(50) NOT NULL");//added
                     "CREATE TABLE users(id SERIAL PRIMARY KEY, username VARCHAR(20) " + "NOT NULL)");
+            db.mCreateVoteTable = db.mConnection.prepareStatement(
+                    "CREATE TABLE votes (id SERIAL PRIMARY KEY, message_id VARCHAR(50) " + "NOT NULL, username VARCHAR(20) NOT NULL," + "is_upvote INT NOT NULL)");//added
             db.mDropUsersTable = db.mConnection.prepareStatement("DROP TABLE users");
             db.mDropMessagesTable = db.mConnection.prepareStatement("DROP TABLE messages");
             // Standard CRUD operations
@@ -221,6 +264,15 @@ public class Database {
             db.mSelectOneUser = db.mConnection.prepareStatement("SELECT * from users WHERE id=?");
             db.mUpdateOneMessage = db.mConnection.prepareStatement("UPDATE messages SET message = ?, username = ?, upvotes = ?, downvotes = ? WHERE id = ?");
             db.mUpdateOneUser = db.mConnection.prepareStatement("UPDATE users SET username = ? WHERE id = ?");
+            db.mUpdateOneMessageUp = db.mConnection.prepareStatement("UPDATE messages SET upvotes = ? WHERE id = ?");
+            db.mUpdateOneMessageDown = db.mConnection.prepareStatement("UPDATE messages SET downvotes = ? WHERE id = ?");
+            db.mInsertVote = db.mConnection.prepareStatement("INSERT INTO votes VALUES (default, ?, ?, ?)");
+            db.mDeleteVote = db.mConnection.prepareStatement("DELETE FROM votes WHERE id = ?");
+            db.mSelectOneVote = db.mConnection.prepareStatement("SELECT * from votes WHERE id=?");
+            db.mSelectAllFromVotes= db.mConnection.prepareStatement("SELECT id, message_id, username, is_upvote FROM votes");//added
+            db.mSelectOneMessageIDVote = db.mConnection.prepareStatement("SELECT * from votes WHERE message_id=?");
+
+
 
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement");
@@ -418,12 +470,132 @@ public class Database {
         return res;
     }
 
+    int updateOneMessageUp(int id, int upvotes) {
+        int res = -1;
+        try {
+            mUpdateOneMessageUp.setInt(1, upvotes);
+            mUpdateOneMessageUp.setInt(2, id);
+            res = mUpdateOneMessageUp.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
+    int updateOneMessageDown(int id, int downvotes) {
+        int res = -1;
+        try {
+            mUpdateOneMessageDown.setInt(1, downvotes);
+            mUpdateOneMessageDown.setInt(2, id);
+            res = mUpdateOneMessageDown.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
     int updateOneUser(int id, String username) {
         int res = -1;
         try {
             mUpdateOneUser.setString(1, username);
             mUpdateOneUser.setInt(2, id);
             res = mUpdateOneUser.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
+    int getUpvotes(int message_id){
+        int upvotes = 0;
+        try {
+            mSelectOneMessage.setInt(1, message_id);
+            ResultSet rs = mSelectOneMessage.executeQuery();
+            if (rs.next()) {
+                upvotes = rs.getInt("upvotes");//added
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return upvotes;
+    }
+
+    int getDownvotes(int message_id){
+        int downvotes = 0;
+        try {
+            mSelectOneMessage.setInt(1, message_id);
+            ResultSet rs = mSelectOneMessage.executeQuery();
+            if (rs.next()) {
+                downvotes = rs.getInt("downvotes");//added
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return downvotes;
+    }
+
+    int insertVote(int message_id, String username, int is_upvote) {
+        int count = 0;
+        try {
+            mInsertVote.setInt(1, message_id);
+            mInsertVote.setString(2, username);
+            mInsertVote.setInt(3, is_upvote);
+            count += mInsertVote.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return count;
+    }
+
+    int deleteVote(int id){
+        int res = -1;
+        try {
+            mDeleteVote.setInt(1, id);
+            res = mDeleteVote.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
+    ArrayList<VoteRowData> selectAllFromVotes() {
+        ArrayList<VoteRowData> res = new ArrayList<VoteRowData>();
+        try {
+            ResultSet rs = mSelectAllFromVotes.executeQuery();
+            while (rs.next()) {
+                res.add(new VoteRowData(rs.getInt("id"), rs.getInt("message_id"), rs.getString("username"), rs.getInt("is_upvote")));//added
+            }
+            rs.close();
+            return res;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+
+    VoteRowData selectOneVote(int id) {
+        VoteRowData res = null;
+        try {
+            mSelectOneVote.setInt(1, id);
+            ResultSet rs = mSelectOneVote.executeQuery();
+            if (rs.next()) {
+                res = new VoteRowData(rs.getInt("id"), rs.getInt("message_id"), rs.getString("username"), rs.getInt("is_upvote"));//added
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
+    VoteRowData selectOneMessageIDVote(int message_id) {
+        VoteRowData res = null;
+        try {
+            mSelectOneMessageIDVote.setInt(1, message_id);
+            ResultSet rs = mSelectOneMessageIDVote.executeQuery();
+            if (rs.next()) {
+                res = new VoteRowData(rs.getInt("id"), rs.getInt("message_id"), rs.getString("username"), rs.getInt("is_upvote"));//added
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -447,6 +619,14 @@ public class Database {
     void createMessagesTable() {
         try {
             mCreateMessageTable.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    void createVotesTable() {
+        try {
+            mCreateVoteTable.execute();
         } catch (SQLException e) {
             e.printStackTrace();
         }
