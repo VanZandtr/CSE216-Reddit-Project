@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 
-import edu.lehigh.cse216.buzzboys.admin.Database.VoteRowData;
+//import edu.lehigh.cse216.buzzboys.admin.Database.VoteRowData;
 
 /**
  * App is our basic admin app.  For now, it is a demonstration of the six key 
@@ -169,7 +169,7 @@ public class App {
                     continue;
                 Database.UserRowData res = db.selectOneUser(id);
                 if (res != null) {
-                    System.out.println("  [" + res.mId + "] " + res.mUsername);
+                    System.out.println("  [" + res.mId + "] "+ " ["+res.mUsername+"] " + res.mFirstname +" "+ res.mLastName + " " + res.mEmail );//added
                 }
             }else if (action == '3') {
                 ArrayList<Database.MessageRowData> res = db.selectAllFromMessages();
@@ -187,7 +187,7 @@ public class App {
                 System.out.println("  Current Database Contents");
                 System.out.println("  -------------------------");
                 for (Database.UserRowData rd : res) {
-                    System.out.println("  [" + rd.mId + "] "+ rd.mUsername);//added
+                    System.out.println("  [" + rd.mId + "] "+ " ["+rd.mUsername+"] " + rd.mFirstname +" "+ rd.mLastName + " " + rd.mEmail );//added
                 }
             }else if (action == 'V') {
                 ArrayList<Database.VoteRowData> res = db.selectAllFromVotes();
@@ -226,9 +226,12 @@ public class App {
                 System.out.println(res + " rows added");
             } else if (action == '8') {
                 String username = db.globalUsername;//added
+                String firstname = getString(in, "Enter your firstname (optional)");
+                String lastname = getString(in, "Enter your lastname (optional)");
+                String email = getString(in, "Enter your email (optional)");
                 if (username == null)
                     continue;
-                int res = db.insertUserRow(username);//added
+                int res = db.insertUserRow(username, firstname, lastname, email);//added
                 System.out.println(res + " rows added");
             }else if (action == '9') {
                 int id = getInt(in, "Enter the row ID :> ");
@@ -246,8 +249,15 @@ public class App {
                 int id = getInt(in, "Enter the row ID :> ");
                 if (id == -1)
                     continue;
-                String username = getString(in, "Enter the new username");
-                int res = db.updateOneUser(id, username);
+                String newUsername = getString(in, "Enter the new username");
+                if(newUsername.isEmpty()){
+                    newUsername = db.globalUsername;
+                }
+                String firstname = getString(in, "Enter your firstname (optional)");
+                String lastname = getString(in, "Enter your lastname (optional)");
+                String email = getString(in, "Enter your email (optional)");
+
+                int res = db.updateOneUser(id, newUsername, firstname,lastname, email);
                 if (res == -1)
                     continue;
                 System.out.println("  " + res + " rows updated");

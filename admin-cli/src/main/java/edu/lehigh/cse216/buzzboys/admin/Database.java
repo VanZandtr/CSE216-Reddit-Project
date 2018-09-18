@@ -132,14 +132,20 @@ public class Database {
         /**
          * The username stored in this row
          */
-        String mUsername;//added
+        String mUsername;
+        String mFirstname;
+        String mLastName;
+        String mEmail;
 
         /**
          * Construct a RowData object by providing values for its fields
          */
-        public UserRowData(int id, String username) {
+        public UserRowData(int id, String username, String firstname, String lastname, String email) {
             mId = id;
             mUsername = username;
+            mFirstname = firstname;
+            mLastName = lastname;
+            mEmail = email;
         }
     }
 
@@ -249,7 +255,7 @@ public class Database {
             db.mCreateMessageTable = db.mConnection.prepareStatement(
                     "CREATE TABLE messages (id SERIAL PRIMARY KEY, subject VARCHAR(50) " + "NOT NULL, message VARCHAR(500) NOT NULL," + "username VARCHAR(20) NOT NULL," + "upvotes INT NOT NULL," + " downvotes INT NOT NULL)");//added
             db.mCreateUserTable = db.mConnection.prepareStatement(
-                    "CREATE TABLE users(id SERIAL PRIMARY KEY, username VARCHAR(20) " + "NOT NULL)");
+                    "CREATE TABLE users(id SERIAL PRIMARY KEY, username VARCHAR(20) " + "NOT NULL, firstname VARCHAR(50)," + "lastname VARCHAR(50)," + "email VARCHAR(100))");
             db.mCreateVoteTable = db.mConnection.prepareStatement(
                     "CREATE TABLE votes (id SERIAL PRIMARY KEY, message_id INT " + "NOT NULL, username VARCHAR(20) NOT NULL," + "is_upvote INT NOT NULL)");//added
             db.mDropUsersTable = db.mConnection.prepareStatement("DROP TABLE users");
@@ -259,13 +265,13 @@ public class Database {
             db.mDeleteOneMessage = db.mConnection.prepareStatement("DELETE FROM messages WHERE id = ?");
             db.mDeleteOneUser = db.mConnection.prepareStatement("DELETE FROM users WHERE id = ?");
             db.mInsertOneMessage = db.mConnection.prepareStatement("INSERT INTO messages VALUES (default, ?, ?, ?, ?, ?)");//added 2 ?'s'
-            db.mInsertOneUser = db.mConnection.prepareStatement("INSERT INTO users VALUES (default, ?)");//added 2
+            db.mInsertOneUser = db.mConnection.prepareStatement("INSERT INTO users VALUES (default, ?, ?, ?, ?)");//added 2
             db.mSelectAllFromMessages = db.mConnection.prepareStatement("SELECT id, subject, username, upvotes, downvotes FROM messages");//added
-            db.mSelectAllFromUsers = db.mConnection.prepareStatement("SELECT id, username FROM users");//added
+            db.mSelectAllFromUsers = db.mConnection.prepareStatement("SELECT id, username, firstname, lastname, email FROM users");//added
             db.mSelectOneMessage = db.mConnection.prepareStatement("SELECT * from messages WHERE id = ?");
             db.mSelectOneUser = db.mConnection.prepareStatement("SELECT * from users WHERE id = ?");
             db.mUpdateOneMessage = db.mConnection.prepareStatement("UPDATE messages SET message = ?, username = ?, upvotes = ?, downvotes = ? WHERE id = ?");
-            db.mUpdateOneUser = db.mConnection.prepareStatement("UPDATE users SET username = ? WHERE id = ?");
+            db.mUpdateOneUser = db.mConnection.prepareStatement("UPDATE users SET username = ?, firstname = ?, lastname = ?, email = ? WHERE id = ?");
             db.mUpdateOneMessageUp = db.mConnection.prepareStatement("UPDATE messages SET upvotes = ? WHERE id = ?");
             db.mUpdateOneMessageDown = db.mConnection.prepareStatement("UPDATE messages SET downvotes = ? WHERE id = ?");
             db.mInsertVote = db.mConnection.prepareStatement("INSERT INTO votes VALUES (default, ?, ?, ?)");
@@ -334,10 +340,13 @@ public class Database {
         return count;
     }
 
-    int insertUserRow(String username) {//added
+    int insertUserRow(String username, String firstname, String lastname, String email) {//added
         int count = 0;
         try {
             mInsertOneUser.setString(1, username);
+            mInsertOneUser.setString(2, firstname);
+            mInsertOneUser.setString(3, lastname);
+            mInsertOneUser.setString(4, email);
             count += mInsertOneUser.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -375,7 +384,7 @@ public class Database {
         try {
             ResultSet rs = mSelectAllFromUsers.executeQuery();
             while (rs.next()) {
-                res.add(new UserRowData(rs.getInt("id"), rs.getString("username")));//added
+                res.add(new UserRowData(rs.getInt("id"), rs.getString("username"), rs.getString("firstname"), rs.getString("lastname"), rs.getString("email")));//added
             }
             rs.close();
             return res;
@@ -412,7 +421,7 @@ public class Database {
             mSelectOneUser.setInt(1, id);
             ResultSet rs = mSelectOneUser.executeQuery();
             if (rs.next()) {
-                res = new UserRowData(rs.getInt("id"), rs.getString("username"));
+                res = new UserRowData(rs.getInt("id"), rs.getString("username"), rs.getString("firstname"), rs.getString("lastname"), rs.getString("email"));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -496,11 +505,14 @@ public class Database {
         return res;
     }
 
-    int updateOneUser(int id, String username) {
+    int updateOneUser(int id, String username, String firstname, String lastname, String email) {
         int res = -1;
         try {
             mUpdateOneUser.setString(1, username);
-            mUpdateOneUser.setInt(2, id);
+            mUpdateOneUser.setString(2, firstname);
+            mUpdateOneUser.setString(3, lastname);
+            mUpdateOneUser.setString(4, email);
+            mUpdateOneUser.setInt(5, id);
             res = mUpdateOneUser.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
