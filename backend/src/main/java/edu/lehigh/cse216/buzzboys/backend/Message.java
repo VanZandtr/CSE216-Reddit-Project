@@ -12,6 +12,10 @@ import java.util.Date;
  * interact with the fields directly.
  */
 public class Message extends Row {
+    /**
+     * Add the user of who posted message
+     */
+    public String userId;
 
     /**
      * The title for this row of data
