@@ -49,7 +49,7 @@ public class Database {
     private PreparedStatement mSelectOneVote;
 
     private PreparedStatement mSelectAllFromVotes;
-    private PreparedStatement mSelectOneMessageIDVote;
+    private PreparedStatement mselectVoteByMessageID;
 
 
 
@@ -69,11 +69,12 @@ public class Database {
 
     private PreparedStatement mDropUsersTable;
 
+    private PreparedStatement mDropVotesTable;
 
     /**
      * Added a global username variable in order to retain Heroku's username
      */
-    String globalUsername = "global_username";
+    String globalUsername = "postgres";
 
     /**
      * RowData is like a struct in C: we use it to hold data, and we allow 
@@ -250,9 +251,10 @@ public class Database {
             db.mCreateUserTable = db.mConnection.prepareStatement(
                     "CREATE TABLE users(id SERIAL PRIMARY KEY, username VARCHAR(20) " + "NOT NULL)");
             db.mCreateVoteTable = db.mConnection.prepareStatement(
-                    "CREATE TABLE votes (id SERIAL PRIMARY KEY, message_id VARCHAR(50) " + "NOT NULL, username VARCHAR(20) NOT NULL," + "is_upvote INT NOT NULL)");//added
+                    "CREATE TABLE votes (id SERIAL PRIMARY KEY, message_id INT " + "NOT NULL, username VARCHAR(20) NOT NULL," + "is_upvote INT NOT NULL)");//added
             db.mDropUsersTable = db.mConnection.prepareStatement("DROP TABLE users");
             db.mDropMessagesTable = db.mConnection.prepareStatement("DROP TABLE messages");
+            db.mDropVotesTable = db.mConnection.prepareStatement("DROP TABLE votes");
             // Standard CRUD operations
             db.mDeleteOneMessage = db.mConnection.prepareStatement("DELETE FROM messages WHERE id = ?");
             db.mDeleteOneUser = db.mConnection.prepareStatement("DELETE FROM users WHERE id = ?");
@@ -260,8 +262,8 @@ public class Database {
             db.mInsertOneUser = db.mConnection.prepareStatement("INSERT INTO users VALUES (default, ?)");//added 2
             db.mSelectAllFromMessages = db.mConnection.prepareStatement("SELECT id, subject, username, upvotes, downvotes FROM messages");//added
             db.mSelectAllFromUsers = db.mConnection.prepareStatement("SELECT id, username FROM users");//added
-            db.mSelectOneMessage = db.mConnection.prepareStatement("SELECT * from messages WHERE id=?");
-            db.mSelectOneUser = db.mConnection.prepareStatement("SELECT * from users WHERE id=?");
+            db.mSelectOneMessage = db.mConnection.prepareStatement("SELECT * from messages WHERE id = ?");
+            db.mSelectOneUser = db.mConnection.prepareStatement("SELECT * from users WHERE id = ?");
             db.mUpdateOneMessage = db.mConnection.prepareStatement("UPDATE messages SET message = ?, username = ?, upvotes = ?, downvotes = ? WHERE id = ?");
             db.mUpdateOneUser = db.mConnection.prepareStatement("UPDATE users SET username = ? WHERE id = ?");
             db.mUpdateOneMessageUp = db.mConnection.prepareStatement("UPDATE messages SET upvotes = ? WHERE id = ?");
@@ -270,7 +272,7 @@ public class Database {
             db.mDeleteVote = db.mConnection.prepareStatement("DELETE FROM votes WHERE id = ?");
             db.mSelectOneVote = db.mConnection.prepareStatement("SELECT * from votes WHERE id=?");
             db.mSelectAllFromVotes= db.mConnection.prepareStatement("SELECT id, message_id, username, is_upvote FROM votes");//added
-            db.mSelectOneMessageIDVote = db.mConnection.prepareStatement("SELECT * from votes WHERE message_id=?");
+            db.mselectVoteByMessageID = db.mConnection.prepareStatement("SELECT * from votes WHERE message_id = ? AND username = ?");
 
 
 
@@ -588,11 +590,12 @@ public class Database {
         return res;
     }
 
-    VoteRowData selectOneMessageIDVote(int message_id) {
+    VoteRowData selectVoteByMessageID(int message_id, String username) {
         VoteRowData res = null;
         try {
-            mSelectOneMessageIDVote.setInt(1, message_id);
-            ResultSet rs = mSelectOneMessageIDVote.executeQuery();
+            mselectVoteByMessageID.setInt(1, message_id);
+            mselectVoteByMessageID.setString(2, username);
+            ResultSet rs = mselectVoteByMessageID.executeQuery();
             if (rs.next()) {
                 res = new VoteRowData(rs.getInt("id"), rs.getInt("message_id"), rs.getString("username"), rs.getInt("is_upvote"));//added
             }
@@ -601,6 +604,7 @@ public class Database {
         }
         return res;
     }
+
 
     /**
      * Create user table.  If it already exists, this will print an error
@@ -639,6 +643,14 @@ public class Database {
     void dropUsersTable() {
         try {
             mDropUsersTable.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    void dropVotesTable() {
+        try {
+            mDropVotesTable.execute();
         } catch (SQLException e) {
             e.printStackTrace();
         }
