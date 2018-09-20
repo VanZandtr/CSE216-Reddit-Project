@@ -3,11 +3,8 @@ package edu.lehigh.cse216.buzzboys.admin;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.IOException;
-
 import java.util.ArrayList;
 import java.util.Map;
-
-//import edu.lehigh.cse216.buzzboys.admin.Database.VoteRowData;
 
 /**
  * App is our basic admin app.  For now, it is a demonstration of the six key 
@@ -123,6 +120,7 @@ public class App {
         String user = env.get("POSTGRES_USER");
         String pass = env.get("POSTGRES_PASS");
 
+        //Heroku Connection
         //String db_url = env.get("DATABASE_URL");
         //db_url += "?sslmode=require";
 
@@ -130,7 +128,7 @@ public class App {
         // Get a fully-configured connection to the database, or exit
         // immediately
         Database db = Database.getDatabase(ip, port, user, pass);
-        //Database db = Database.getDatabase(db_url);
+        //Database db = Database.getDatabase(db_url); //Heroku Connection
         if (db == null)
             return;
 
@@ -142,19 +140,19 @@ public class App {
             // NB: for better testability, each action should be a separate
             //     function call
             char action = prompt(in);
-            if (action == '?') {
+            if (action == '?') { //get the menu
                 menu();
-            } else if (action == 'q') {
+            } else if (action == 'q') { //quit
                 break;
-            } else if (action == 'T') {
-                db.createUsersTable();
+            } else if (action == 'T') { //Create all the tables
+                db.createUsersTable(); 
                 db.createMessagesTable();
                 db.createVotesTable();
-            } else if (action == 'D') {
+            } else if (action == 'D') { //Drop all the tables
                 db.dropMessagesTable();
                 db.dropUsersTable();
                 db.dropVotesTable();
-            } else if (action == '1') {
+            } else if (action == '1') { //Select a message
                 int id = getInt(in, "Enter the row ID");
                 if (id == -1)
                     continue;
@@ -163,7 +161,7 @@ public class App {
                     System.out.println("  [" + res.mId + "] " + "["+res.mUsername+"] "+ res.mSubject ); //added
                     System.out.println("  --> " + res.mMessage +" [" + res.mUpvotes + "/"+ res.mDownvotes+"]"); //added
                 }
-            } else if (action == '2'){
+            } else if (action == '2'){ //Select a user
                 int id = getInt(in, "Enter the row ID");
                 if (id == -1)
                     continue;
@@ -171,7 +169,7 @@ public class App {
                 if (res != null) {
                     System.out.println("  [" + res.mId + "] "+ " ["+res.mUsername+"] " + res.mFirstname +" "+ res.mLastName + " " + res.mEmail );//added
                 }
-            }else if (action == '3') {
+            }else if (action == '3') { //Select all Messages
                 ArrayList<Database.MessageRowData> res = db.selectAllFromMessages();
                 if (res == null)
                     continue;
@@ -180,7 +178,7 @@ public class App {
                 for (Database.MessageRowData rd : res) {
                     System.out.println("  [" + rd.mId + "] "+ "["+rd.mUsername+"] " + rd.mSubject +" [" + rd.mUpvotes + "/"+ rd.mDownvotes+"]");//added
                 }
-            } else if (action == '4') {
+            } else if (action == '4') { //Select all Users
                 ArrayList<Database.UserRowData> res = db.selectAllFromUsers();
                 if (res == null)
                     continue;
@@ -189,7 +187,7 @@ public class App {
                 for (Database.UserRowData rd : res) {
                     System.out.println("  [" + rd.mId + "] "+ " ["+rd.mUsername+"] " + rd.mFirstname +" "+ rd.mLastName + " " + rd.mEmail );//added
                 }
-            }else if (action == 'V') {
+            }else if (action == 'V') { //Select all votes
                 ArrayList<Database.VoteRowData> res = db.selectAllFromVotes();
                 if (res == null)
                     continue;
@@ -198,11 +196,11 @@ public class App {
                 for (Database.VoteRowData rd : res) {
                     System.out.println("  [" + rd.mId + "] "+ "["+rd.mMessage_Id+"] " + rd.mUsername +" [" + rd.mIs_upvote+"]");//added
                 }
-            }else if (action == '5') {
+            }else if (action == '5') { //Delete a message
                 int id = getInt(in, "Enter the row ID");
                 if (id == -1)
                     continue;
-                ArrayList<Database.VoteRowData> votes = db.selectVotesByMessageID(id);
+                ArrayList<Database.VoteRowData> votes = db.selectVotesByMessageID(id); //Delete all votes associated with that message
                 for (Database.VoteRowData rd : votes) {
                     int deleteRow = db.deleteVote(rd.mId);
                     if (deleteRow == -1)
@@ -212,7 +210,7 @@ public class App {
                 if (res == -1)
                     continue;
                 System.out.println("  " + res + " rows deleted");
-            }else if (action == '6') {
+            }else if (action == '6') { //Delete a user
                 int id = getInt(in, "Enter the row ID");
                 if (id == -1)
                     continue;
@@ -220,7 +218,7 @@ public class App {
                 if (res == -1)
                     continue;
                 System.out.println("  " + res + " rows deleted");
-            }else if (action == '7') {
+            }else if (action == '7') { //Insert new message
                 String subject = getString(in, "Enter the subject");
                 String message = getString(in, "Enter the message");
                 String username = db.globalUsername;//added
@@ -230,7 +228,7 @@ public class App {
                     continue;
                 int res = db.insertMessageRow(subject, message, username, upvotes, downvotes);//added
                 System.out.println(res + " rows added");
-            } else if (action == '8') {
+            } else if (action == '8') { //Insert new user
                 String username = db.globalUsername;//added
                 String firstname = getString(in, "Enter your firstname (optional)");
                 String lastname = getString(in, "Enter your lastname (optional)");
@@ -239,7 +237,7 @@ public class App {
                     continue;
                 int res = db.insertUserRow(username, firstname, lastname, email);//added
                 System.out.println(res + " rows added");
-            }else if (action == '9') {
+            }else if (action == '9') {//Update a message
                 int id = getInt(in, "Enter the row ID :> ");
                 if (id == -1)
                     continue;
@@ -251,7 +249,7 @@ public class App {
                 if (res == -1)
                     continue;
                 System.out.println("  " + res + " rows updated");
-            }else if (action == '0') {
+            }else if (action == '0') {//Update a user
                 int id = getInt(in, "Enter the row ID :> ");
                 if (id == -1)
                     continue;
@@ -267,9 +265,7 @@ public class App {
                 if (res == -1)
                     continue;
                 System.out.println("  " + res + " rows updated");
-
-
-            }else if (action == '-') {
+            }else if (action == '-') { //Downvote a message
                 int id = getInt(in, "Enter the row ID :> ");
                 if (id == -1){
                     continue;
@@ -279,20 +275,21 @@ public class App {
                     int downvotes = db.getDownvotes(id);//get number of downvotes for that message;
                     System.out.println("DownVotes: " + downvotes);
                     Database.VoteRowData voteRow = db.selectVotesByMessageIDUserID(id, username);
+
                     if(voteRow != null && voteRow.mIs_upvote == 0){//found a downvote
                         System.out.println("Found a downvote");
                         int deleteRow = db.deleteVote(voteRow.mId); //undo downvote
                         if (deleteRow == -1)
                             continue;
                         downvotes -=1;
-                    }else if(voteRow != null && voteRow.mIs_upvote == 1){//found an upvote
+                    }
+
+                    else if(voteRow != null && voteRow.mIs_upvote == 1){//found an upvote
                         System.out.println("Found an upvote");
                         int deleteRow = db.deleteVote(voteRow.mId); //undo up_vote
                         if (deleteRow == -1)
                             continue;
-
                         System.out.println("undo upvote");
-                        
                         System.out.println("undo downvote");
                         int upvotes = db.getUpvotes(id);//get number of downvotes for that message;
                         upvotes -= 1;
@@ -306,6 +303,7 @@ public class App {
                         System.out.println("Insert a downvote");
                         downvotes +=1;
                     }
+
                     else{//vote row is null
                         System.out.println("No vote found");
                         int insertRow = db.insertVote(id, username, 0);//insert the downvote
@@ -313,13 +311,14 @@ public class App {
                             continue;
                         System.out.println("Insert a downvote");
                         downvotes +=1;
-                    }                    
+                    }
+
                     int res = db.updateOneMessageDown(id, downvotes);//reflect the change in downvotes
                     if (res == -1)
                         continue;
                     System.out.println("  " + res + " rows updated");
                 }
-            }else if (action == '+') {
+            }else if (action == '+') {// Upvote a message
                 int id = getInt(in, "Enter the row ID :> ");
                 if (id == -1){
                     continue;
@@ -335,7 +334,9 @@ public class App {
                         if (deleteRow == -1)
                             continue;
                         upvotes -=1;
-                    }else if(voteRow != null && voteRow.mIs_upvote == 0){//found a downvote
+                    }
+                    
+                    else if(voteRow != null && voteRow.mIs_upvote == 0){//found a downvote
                         System.out.println("Found a downvote");
                         int deleteRow = db.deleteVote(voteRow.mId); //undo downvote
                         if (deleteRow == -1)
@@ -354,6 +355,7 @@ public class App {
                         System.out.println("Insert a upvote");
                         upvotes +=1;
                     }
+
                     else{//vote row is null
                         System.out.println("No vote found");
                         int insertRow = db.insertVote(id, username, 1);//insert the upvote
@@ -361,7 +363,8 @@ public class App {
                             continue;
                         System.out.println("Insert an upvote");
                         upvotes +=1;
-                    }                    
+                    }
+                                        
                     int res = db.updateOneMessageUp(id, upvotes);//reflect the change in upvotes
                     if (res == -1)
                         continue;

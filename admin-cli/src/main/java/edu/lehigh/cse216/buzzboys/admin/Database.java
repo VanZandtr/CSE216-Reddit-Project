@@ -17,60 +17,32 @@ public class Database {
      */
     private Connection mConnection;
 
+    /**
+     * All PreparedStatements
+     */
     private PreparedStatement mInsertOneMessage;
-    
     private PreparedStatement mInsertOneUser;
-    
     private PreparedStatement mSelectAllFromMessages;
-    
     private PreparedStatement mSelectAllFromUsers;
-
     private PreparedStatement mUpdateOneMessage;
     private PreparedStatement mUpdateOneMessageUp;
     private PreparedStatement mUpdateOneMessageDown;
-
-    
     private PreparedStatement mUpdateOneUser;
-
-    private PreparedStatement mCreateMessageTable;
-            
+    private PreparedStatement mCreateMessageTable;       
     private PreparedStatement mCreateUserTable;
-
     private PreparedStatement mSelectOneMessage;
-
     private PreparedStatement mSelectOneUser;
-
     private PreparedStatement mCreateVoteTable;
-
     private PreparedStatement mInsertVote;
-
     private PreparedStatement mDeleteVote;
-
     private PreparedStatement mSelectOneVote;
-
     private PreparedStatement mSelectAllFromVotes;
     private PreparedStatement mselectVotesByMessageIDUserID;
     private PreparedStatement mselectVotesByMessageID;
-
-
-
-
-
-    /**
-     * A prepared statement for deleting a row from the database
-     */
     private PreparedStatement mDeleteOneMessage;
-
     private PreparedStatement mDeleteOneUser;
-
-
-    /**
-     * A prepared statement for dropping the tables in our database
-     */
     private PreparedStatement mDropMessagesTable;
-
     private PreparedStatement mDropUsersTable;
-
     private PreparedStatement mDropVotesTable;
 
     /**
@@ -79,69 +51,36 @@ public class Database {
     String globalUsername = "postgres";
 
     /**
-     * RowData is like a struct in C: we use it to hold data, and we allow 
-     * direct access to its fields.  In the context of this Database, RowData 
-     * represents the data we'd see in a row.
-     * 
-     * We make RowData a static class of Database because we don't really want
-     * to encourage users to think of RowData as being anything other than an
-     * abstract representation of a row of the database.  RowData and the 
-     * Database are tightly coupled: if one changes, the other should too.
+     * MessageRowData holds message columns
      */
     public static class MessageRowData {
-        /**
-         * The ID of this row of the database
-         */
         int mId;
-        /**
-         * The subject stored in this row
-         */
         String mSubject;
-        /**
-         * The message stored in this row
-         */
         String mMessage;
-        
-
-        /**
-         * The username stored in this row
-         */
-        String mUsername;//added
-        /**
-         * The number of likes stored in this row
-         */
-        int mUpvotes;//added
+        String mUsername;
+        int mUpvotes;
         int mDownvotes;
 
-        /**
-         * Construct a RowData object by providing values for its fields
-         */
         public MessageRowData(int id, String subject, String message, String username, int upvotes, int downvotes) {
             mId = id;
             mSubject = subject;
             mMessage = message;
-            mUsername = username; //added
-            mUpvotes = upvotes;//added
+            mUsername = username;
+            mUpvotes = upvotes;
             mDownvotes = downvotes;
         }
     }
 
+    /**
+     * UserRowData holds user information
+     */
     public static class UserRowData {
-        /**
-         * The ID of this row of the database
-         */
         int mId;
-        /**
-         * The username stored in this row
-         */
         String mUsername;
         String mFirstname;
         String mLastName;
         String mEmail;
 
-        /**
-         * Construct a RowData object by providing values for its fields
-         */
         public UserRowData(int id, String username, String firstname, String lastname, String email) {
             mId = id;
             mUsername = username;
@@ -151,23 +90,15 @@ public class Database {
         }
     }
 
+    /**
+     * VoteRowData holds messages' vote records
+     */
     public static class VoteRowData {
-        /**
-         * The ID of this row of the database
-         */
         int mId;
-
         int mMessage_Id;
-        /**
-         * The username stored in this row
-         */
         String mUsername;//added
-
         int mIs_upvote;
 
-        /**
-         * Construct a RowData object by providing values for its fields
-         */
         public VoteRowData(int id, int message_id, String username, int is_upvote) {
             mId = id;
             mUsername = username;
@@ -198,12 +129,13 @@ public class Database {
      * @return A Database object, or null if we cannot connect properly
      */
     
-    static Database getDatabase(String ip, String port, String user, String pass) {
-    //static Database getDatabase(String db_url) {
+    static Database getDatabase(String ip, String port, String user, String pass) {//Postgres Connection
+    //static Database getDatabase(String db_url) {//Heroku Connection
 
         // Create an un-configured Database object
         Database db = new Database();
 /*
+        //Heroku Connection
         //Give the Database object a connection, fail if we cannot get one
         try {
             Class.forName("org.postgresql.Driver");
@@ -230,6 +162,7 @@ public class Database {
             return null;
         }
 */
+
         // Give the Database object a connection, fail if we cannot get one
         try {
             Connection conn = DriverManager.getConnection("jdbc:postgresql://" + ip + ":" + port + "/", user, pass);
@@ -254,22 +187,27 @@ public class Database {
 
             // Note: no "IF NOT EXISTS" or "IF EXISTS" checks on table 
             // creation/deletion, so multiple executions will cause an exception
+
+            //Create Tables
             db.mCreateMessageTable = db.mConnection.prepareStatement(
                     "CREATE TABLE messages (id SERIAL PRIMARY KEY, subject VARCHAR(50) " + "NOT NULL, message VARCHAR(500) NOT NULL," + "username VARCHAR(20) NOT NULL," + "upvotes INT NOT NULL," + " downvotes INT NOT NULL)");//added
             db.mCreateUserTable = db.mConnection.prepareStatement(
                     "CREATE TABLE users(id SERIAL PRIMARY KEY, username VARCHAR(20) " + "NOT NULL, firstname VARCHAR(50)," + "lastname VARCHAR(50)," + "email VARCHAR(100))");
             db.mCreateVoteTable = db.mConnection.prepareStatement(
-                    "CREATE TABLE votes (id SERIAL PRIMARY KEY, message_id INT " + "NOT NULL, username VARCHAR(20) NOT NULL," + "is_upvote INT NOT NULL)");//added
+                    "CREATE TABLE votes (id SERIAL PRIMARY KEY, message_id INT " + "NOT NULL, username VARCHAR(20) NOT NULL," + "is_upvote INT NOT NULL)");
+
+            //Drop Tables                    
             db.mDropUsersTable = db.mConnection.prepareStatement("DROP TABLE users");
             db.mDropMessagesTable = db.mConnection.prepareStatement("DROP TABLE messages");
             db.mDropVotesTable = db.mConnection.prepareStatement("DROP TABLE votes");
+
             // Standard CRUD operations
             db.mDeleteOneMessage = db.mConnection.prepareStatement("DELETE FROM messages WHERE id = ?");
             db.mDeleteOneUser = db.mConnection.prepareStatement("DELETE FROM users WHERE id = ?");
-            db.mInsertOneMessage = db.mConnection.prepareStatement("INSERT INTO messages VALUES (default, ?, ?, ?, ?, ?)");//added 2 ?'s'
-            db.mInsertOneUser = db.mConnection.prepareStatement("INSERT INTO users VALUES (default, ?, ?, ?, ?)");//added 2
-            db.mSelectAllFromMessages = db.mConnection.prepareStatement("SELECT id, subject, username, upvotes, downvotes FROM messages");//added
-            db.mSelectAllFromUsers = db.mConnection.prepareStatement("SELECT id, username, firstname, lastname, email FROM users");//added
+            db.mInsertOneMessage = db.mConnection.prepareStatement("INSERT INTO messages VALUES (default, ?, ?, ?, ?, ?)");
+            db.mInsertOneUser = db.mConnection.prepareStatement("INSERT INTO users VALUES (default, ?, ?, ?, ?)");
+            db.mSelectAllFromMessages = db.mConnection.prepareStatement("SELECT id, subject, username, upvotes, downvotes FROM messages");
+            db.mSelectAllFromUsers = db.mConnection.prepareStatement("SELECT id, username, firstname, lastname, email FROM users");
             db.mSelectOneMessage = db.mConnection.prepareStatement("SELECT * from messages WHERE id = ?");
             db.mSelectOneUser = db.mConnection.prepareStatement("SELECT * from users WHERE id = ?");
             db.mUpdateOneMessage = db.mConnection.prepareStatement("UPDATE messages SET message = ?, username = ?, upvotes = ?, downvotes = ? WHERE id = ?");
@@ -282,7 +220,6 @@ public class Database {
             db.mSelectAllFromVotes= db.mConnection.prepareStatement("SELECT id, message_id, username, is_upvote FROM votes");//added
             db.mselectVotesByMessageIDUserID = db.mConnection.prepareStatement("SELECT * from votes WHERE message_id = ? AND username = ?");
             db.mselectVotesByMessageID = db.mConnection.prepareStatement("SELECT * from votes WHERE message_id = ?");
-
 
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement");
@@ -319,14 +256,12 @@ public class Database {
     }
 
     /**
-     * Insert a message row into the database
-     * 
-     * @param subject The subject for this new row
-     * @param message The message body for this new row
-     * @param username The username associated with the message
-     * 
-     * @return The number of rows that were inserted
-     */
+     * Methods to insert, delete, and change rows in tables: Users, Messages, and Votes
+    */
+
+    /**
+     *  insert new message
+     */ 
     int insertMessageRow(String subject, String message, String username, int upvotes, int downvotes) {//added
         int count = 0;
         try {
@@ -342,6 +277,9 @@ public class Database {
         return count;
     }
 
+    /**
+     *  insert new user
+     */ 
     int insertUserRow(String username, String firstname, String lastname, String email) {//added
         int count = 0;
         try {
@@ -357,10 +295,8 @@ public class Database {
     }
 
     /**
-     * Query the database for a list of all subjects and their IDs
-     * 
-     * @return All rows, as an ArrayList
-     */
+     *  select all messages
+     */ 
     ArrayList<MessageRowData> selectAllFromMessages() {
         ArrayList<MessageRowData> res = new ArrayList<MessageRowData>();
         try {
@@ -376,11 +312,11 @@ public class Database {
         }
     }
 
-     /**
-     * Query the database for a list of all users and their IDs
-     * 
-     * @return All rows, as an ArrayList
-     */
+    
+    /**
+     *  select all users
+     */ 
+
     ArrayList<UserRowData> selectAllFromUsers() {
         ArrayList<UserRowData> res = new ArrayList<UserRowData>();
         try {
@@ -396,13 +332,10 @@ public class Database {
         }
     }
 
+    
     /**
-     * Get all data for a specific row, by ID
-     * 
-     * @param id The id of the row being requested
-     * 
-     * @return The data for the requested row, or null if the ID was invalid
-     */
+     *  select one message by id
+     */ 
     MessageRowData selectOneMessage(int id) {
         MessageRowData res = null;
         try {
@@ -417,6 +350,10 @@ public class Database {
         return res;
     }
 
+    
+    /**
+     *  select one user by id
+     */ 
     UserRowData selectOneUser(int id) {
         UserRowData res = null;
         try {
@@ -431,13 +368,10 @@ public class Database {
         return res;
     }
 
+   
     /**
-     * Delete a row by ID
-     * 
-     * @param id The id of the row to delete
-     * 
-     * @return The number of rows that were deleted.  -1 indicates an error.
-     */
+     *  delete a message by id
+     */ 
     int deleteMessageRow(int id) {
         int res = -1;
         try {
@@ -449,6 +383,9 @@ public class Database {
         return res;
     }
 
+    /**
+     *  delete a user by id
+     */ 
     int deleteUserRow(int id) {
         int res = -1;
         try {
@@ -462,11 +399,6 @@ public class Database {
 
     /**
      * Update the message for a row in the database
-     * 
-     * @param id The id of the row to update
-     * @param message The new message contents
-     * 
-     * @return The number of rows that were updated.  -1 indicates an error.
      */
     int updateOneMessage(int id, String message, String username, int upvotes, int downvotes) {
         int res = -1;
@@ -483,6 +415,9 @@ public class Database {
         return res;
     }
 
+    /**
+     * Update the upvotes for a message by id
+     */
     int updateOneMessageUp(int id, int upvotes) {
         int res = -1;
         try {
@@ -495,6 +430,9 @@ public class Database {
         return res;
     }
 
+      /**
+     * Update the downvotes for a message by id
+     */
     int updateOneMessageDown(int id, int downvotes) {
         int res = -1;
         try {
@@ -507,6 +445,9 @@ public class Database {
         return res;
     }
 
+    /**
+     * Update a user with new username, first and lastname, and email
+     */
     int updateOneUser(int id, String username, String firstname, String lastname, String email) {
         int res = -1;
         try {
@@ -522,6 +463,9 @@ public class Database {
         return res;
     }
 
+    /**
+     * return the number of upvotes a message has
+     */
     int getUpvotes(int message_id){
         int upvotes = 0;
         try {
@@ -536,6 +480,9 @@ public class Database {
         return upvotes;
     }
 
+    /**
+     * return the number of downvotes a message has
+     */
     int getDownvotes(int message_id){
         int downvotes = 0;
         try {
@@ -550,6 +497,9 @@ public class Database {
         return downvotes;
     }
 
+    /**
+     * insert a new vote on a message into votes table
+     */
     int insertVote(int message_id, String username, int is_upvote) {
         int count = 0;
         try {
@@ -563,6 +513,11 @@ public class Database {
         return count;
     }
 
+     /**
+     * delete a vote by id 
+     * 
+     * this happens on message deletion or a change in vote by a user
+     */
     int deleteVote(int id){
         int res = -1;
         try {
@@ -574,6 +529,9 @@ public class Database {
         return res;
     }
 
+     /**
+     * select all votes
+     */
     ArrayList<VoteRowData> selectAllFromVotes() {
         ArrayList<VoteRowData> res = new ArrayList<VoteRowData>();
         try {
@@ -590,6 +548,9 @@ public class Database {
     }
 
 
+     /**
+     * selct one vote by id its id
+     */
     VoteRowData selectOneVote(int id) {
         VoteRowData res = null;
         try {
@@ -604,6 +565,9 @@ public class Database {
         return res;
     }
 
+     /**
+     * select one user's vote on one message
+     */
     VoteRowData selectVotesByMessageIDUserID(int message_id, String username) {
         VoteRowData res = null;
         try {
@@ -619,6 +583,11 @@ public class Database {
         return res;
     }
 
+     /**
+     * select all votes that a message has 
+     * 
+     * this is used if a message is deleted
+     */
     ArrayList<VoteRowData> selectVotesByMessageID(int message_id) {
         ArrayList<VoteRowData> res = new ArrayList<VoteRowData>();
         try {
@@ -656,6 +625,10 @@ public class Database {
         }
     }
 
+    
+    /**
+     * Create vote table.  If it already exists, this will print an error
+     */
     void createVotesTable() {
         try {
             mCreateVoteTable.execute();
