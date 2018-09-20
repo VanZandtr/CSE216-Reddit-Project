@@ -49,7 +49,9 @@ public class Database {
     private PreparedStatement mSelectOneVote;
 
     private PreparedStatement mSelectAllFromVotes;
-    private PreparedStatement mselectVoteByMessageID;
+    private PreparedStatement mselectVotesByMessageIDUserID;
+    private PreparedStatement mselectVotesByMessageID;
+
 
 
 
@@ -278,8 +280,8 @@ public class Database {
             db.mDeleteVote = db.mConnection.prepareStatement("DELETE FROM votes WHERE id = ?");
             db.mSelectOneVote = db.mConnection.prepareStatement("SELECT * from votes WHERE id=?");
             db.mSelectAllFromVotes= db.mConnection.prepareStatement("SELECT id, message_id, username, is_upvote FROM votes");//added
-            db.mselectVoteByMessageID = db.mConnection.prepareStatement("SELECT * from votes WHERE message_id = ? AND username = ?");
-
+            db.mselectVotesByMessageIDUserID = db.mConnection.prepareStatement("SELECT * from votes WHERE message_id = ? AND username = ?");
+            db.mselectVotesByMessageID = db.mConnection.prepareStatement("SELECT * from votes WHERE message_id = ?");
 
 
         } catch (SQLException e) {
@@ -602,14 +604,28 @@ public class Database {
         return res;
     }
 
-    VoteRowData selectVoteByMessageID(int message_id, String username) {
+    VoteRowData selectVotesByMessageIDUserID(int message_id, String username) {
         VoteRowData res = null;
         try {
-            mselectVoteByMessageID.setInt(1, message_id);
-            mselectVoteByMessageID.setString(2, username);
-            ResultSet rs = mselectVoteByMessageID.executeQuery();
+            mselectVotesByMessageIDUserID.setInt(1, message_id);
+            mselectVotesByMessageIDUserID.setString(2, username);
+            ResultSet rs = mselectVotesByMessageIDUserID.executeQuery();
             if (rs.next()) {
                 res = new VoteRowData(rs.getInt("id"), rs.getInt("message_id"), rs.getString("username"), rs.getInt("is_upvote"));//added
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
+    ArrayList<VoteRowData> selectVotesByMessageID(int message_id) {
+        ArrayList<VoteRowData> res = new ArrayList<VoteRowData>();
+        try {
+            mselectVotesByMessageID.setInt(1, message_id);
+            ResultSet rs = mselectVotesByMessageIDUserID.executeQuery();
+            while (rs.next()) {
+                res.add(new VoteRowData(rs.getInt("id"), rs.getInt("message_id"), rs.getString("username"), rs.getInt("is_upvote")));//added
             }
         } catch (SQLException e) {
             e.printStackTrace();

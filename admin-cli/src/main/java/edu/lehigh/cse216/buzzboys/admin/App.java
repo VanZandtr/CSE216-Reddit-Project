@@ -202,6 +202,12 @@ public class App {
                 int id = getInt(in, "Enter the row ID");
                 if (id == -1)
                     continue;
+                ArrayList<Database.VoteRowData> votes = db.selectVotesByMessageID(id);
+                for (Database.VoteRowData rd : votes) {
+                    int deleteRow = db.deleteVote(rd.mId);
+                    if (deleteRow == -1)
+                        continue;
+                }
                 int res = db.deleteMessageRow(id);
                 if (res == -1)
                     continue;
@@ -268,95 +274,99 @@ public class App {
                 if (id == -1){
                     continue;
                 }
-                String username = "postgres";
-                int downvotes = db.getDownvotes(id);//get number of downvotes for that message;
-                System.out.println("DownVotes: " + downvotes);
-                Database.VoteRowData voteRow = db.selectVoteByMessageID(id, username);
-                if(voteRow != null && voteRow.mIs_upvote == 0){//found a downvote
-                    System.out.println("Found a downvote");
-                    int deleteRow = db.deleteVote(voteRow.mId); //undo downvote
-                    if (deleteRow == -1)
-                        continue;
-                    downvotes -=1;
-                }else if(voteRow != null && voteRow.mIs_upvote == 1){//found an upvote
-                    System.out.println("Found an upvote");
-                    int deleteRow = db.deleteVote(voteRow.mId); //undo up_vote
-                    if (deleteRow == -1)
-                        continue;
+                else{
+                    String username = "postgres";
+                    int downvotes = db.getDownvotes(id);//get number of downvotes for that message;
+                    System.out.println("DownVotes: " + downvotes);
+                    Database.VoteRowData voteRow = db.selectVotesByMessageIDUserID(id, username);
+                    if(voteRow != null && voteRow.mIs_upvote == 0){//found a downvote
+                        System.out.println("Found a downvote");
+                        int deleteRow = db.deleteVote(voteRow.mId); //undo downvote
+                        if (deleteRow == -1)
+                            continue;
+                        downvotes -=1;
+                    }else if(voteRow != null && voteRow.mIs_upvote == 1){//found an upvote
+                        System.out.println("Found an upvote");
+                        int deleteRow = db.deleteVote(voteRow.mId); //undo up_vote
+                        if (deleteRow == -1)
+                            continue;
 
-                    System.out.println("undo upvote");
-                    
-                    System.out.println("undo downvote");
-                    int upvotes = db.getUpvotes(id);//get number of downvotes for that message;
-                    upvotes -= 1;
-                    int res = db.updateOneMessageUp(id, upvotes);//reflect the change in downvotes
+                        System.out.println("undo upvote");
+                        
+                        System.out.println("undo downvote");
+                        int upvotes = db.getUpvotes(id);//get number of downvotes for that message;
+                        upvotes -= 1;
+                        int res = db.updateOneMessageUp(id, upvotes);//reflect the change in downvotes
+                        if (res == -1)
+                            continue;
+
+                        int insertRow = db.insertVote(id, username, 0);//insert the downvote
+                        if (insertRow == -1)
+                            continue;
+                        System.out.println("Insert a downvote");
+                        downvotes +=1;
+                    }
+                    else{//vote row is null
+                        System.out.println("No vote found");
+                        int insertRow = db.insertVote(id, username, 0);//insert the downvote
+                        if (insertRow == -1)
+                            continue;
+                        System.out.println("Insert a downvote");
+                        downvotes +=1;
+                    }                    
+                    int res = db.updateOneMessageDown(id, downvotes);//reflect the change in downvotes
                     if (res == -1)
                         continue;
-
-                    int insertRow = db.insertVote(id, username, 0);//insert the downvote
-                    if (insertRow == -1)
-                        continue;
-                    System.out.println("Insert a downvote");
-                    downvotes +=1;
+                    System.out.println("  " + res + " rows updated");
                 }
-                else{//vote row is null
-                    System.out.println("No vote found");
-                    int insertRow = db.insertVote(id, username, 0);//insert the downvote
-                    if (insertRow == -1)
-                          continue;
-                    System.out.println("Insert a downvote");
-                    downvotes +=1;
-                }                    
-                int res = db.updateOneMessageDown(id, downvotes);//reflect the change in downvotes
-                if (res == -1)
-                    continue;
-                System.out.println("  " + res + " rows updated");
             }else if (action == '+') {
                 int id = getInt(in, "Enter the row ID :> ");
                 if (id == -1){
                     continue;
                 }
-                String username = db.globalUsername;
-                int upvotes = db.getUpvotes(id);//get number of downvotes for that message;
-                System.out.println("Upvotes: " + upvotes);
-                Database.VoteRowData voteRow = db.selectVoteByMessageID(id, username);
-                if(voteRow != null && voteRow.mIs_upvote == 1){//found an upvote
-                    System.out.println("Found an upvote");
-                    int deleteRow = db.deleteVote(voteRow.mId); //undo downvote
-                    if (deleteRow == -1)
-                        continue;
-                    upvotes -=1;
-                }else if(voteRow != null && voteRow.mIs_upvote == 0){//found a downvote
-                    System.out.println("Found a downvote");
-                    int deleteRow = db.deleteVote(voteRow.mId); //undo downvote
-                    if (deleteRow == -1)
-                        continue;
+                else{
+                    String username = db.globalUsername;
+                    int upvotes = db.getUpvotes(id);//get number of downvotes for that message;
+                    System.out.println("Upvotes: " + upvotes);
+                    Database.VoteRowData voteRow = db.selectVotesByMessageIDUserID(id, username);
+                    if(voteRow != null && voteRow.mIs_upvote == 1){//found an upvote
+                        System.out.println("Found an upvote");
+                        int deleteRow = db.deleteVote(voteRow.mId); //undo downvote
+                        if (deleteRow == -1)
+                            continue;
+                        upvotes -=1;
+                    }else if(voteRow != null && voteRow.mIs_upvote == 0){//found a downvote
+                        System.out.println("Found a downvote");
+                        int deleteRow = db.deleteVote(voteRow.mId); //undo downvote
+                        if (deleteRow == -1)
+                            continue;
 
-                    System.out.println("undo downvote");
-                    int downvotes = db.getDownvotes(id);//get number of downvotes for that message;
-                    downvotes -= 1;
-                    int res = db.updateOneMessageDown(id, downvotes);//reflect the change in downvotes
+                        System.out.println("undo downvote");
+                        int downvotes = db.getDownvotes(id);//get number of downvotes for that message;
+                        downvotes -= 1;
+                        int res = db.updateOneMessageDown(id, downvotes);//reflect the change in downvotes
+                        if (res == -1)
+                            continue;
+
+                        int insertRow = db.insertVote(id, username, 1);//insert the upvote
+                        if (insertRow == -1)
+                            continue;
+                        System.out.println("Insert a upvote");
+                        upvotes +=1;
+                    }
+                    else{//vote row is null
+                        System.out.println("No vote found");
+                        int insertRow = db.insertVote(id, username, 1);//insert the upvote
+                        if (insertRow == -1)
+                            continue;
+                        System.out.println("Insert an upvote");
+                        upvotes +=1;
+                    }                    
+                    int res = db.updateOneMessageUp(id, upvotes);//reflect the change in upvotes
                     if (res == -1)
                         continue;
-
-                    int insertRow = db.insertVote(id, username, 1);//insert the upvote
-                    if (insertRow == -1)
-                        continue;
-                    System.out.println("Insert a upvote");
-                    upvotes +=1;
+                    System.out.println("  " + res + " rows updated");
                 }
-                else{//vote row is null
-                    System.out.println("No vote found");
-                    int insertRow = db.insertVote(id, username, 1);//insert the upvote
-                    if (insertRow == -1)
-                          continue;
-                    System.out.println("Insert an upvote");
-                    upvotes +=1;
-                }                    
-                int res = db.updateOneMessageUp(id, upvotes);//reflect the change in upvotes
-                if (res == -1)
-                    continue;
-                System.out.println("  " + res + " rows updated");
             }
         }
         // Always remember to disconnect from the database when the program
