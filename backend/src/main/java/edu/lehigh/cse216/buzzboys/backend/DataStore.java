@@ -16,7 +16,7 @@ public abstract class DataStore {
     /**
      * The rows of data in our DataStore
      */
-    Database db;
+    static Database db;
 
     /**
      * A counter for keeping track of the next ID to assign to a new row
@@ -31,7 +31,8 @@ public abstract class DataStore {
      */
     DataStore(String ip, String port, String user, String pass) {
         counter = 0;
-        db = Database.getDatabase(ip, port, user, pass);
+        if(db == null)
+            db = Database.getDatabase(ip, port, user, pass);
     }
 
     /**

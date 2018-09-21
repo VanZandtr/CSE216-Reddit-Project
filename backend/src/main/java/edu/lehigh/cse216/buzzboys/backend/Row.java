@@ -17,8 +17,8 @@ public abstract class Row {
      * Constructor for a Row
      * @param id
      */
-    public Row(int id) {
+    public Row(int id, Date date) {
         this.id = id;
-        cDate = new Date();
+        cDate = date;
     }
 }

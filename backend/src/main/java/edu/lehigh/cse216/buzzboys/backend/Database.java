@@ -14,6 +14,12 @@ import java.util.ArrayList;
 import java.util.Date;
 
 public class Database {
+
+    /**
+     * singleton instance of db
+     */
+    private static Database db = null;
+
     /**
      * The connection to the database.  When there is no connection, it should
      * be null.  Otherwise, there is a valid open connection
@@ -105,7 +111,7 @@ public class Database {
          * Constructor for RowData with fields that every type of row has
          */
         public RowData(int rid, Date date) {
-            this.id = id;
+            this.id = rid;
             cDate = date;
         }
     }
@@ -143,8 +149,8 @@ public class Database {
         /**
          * Construct a RowData object by providing values for its fields
          */
-        public MessageRowData(int id, String subject, String message, String username, int upvotes, int downvotes) {
-            super(id, new Date());
+        public MessageRowData(int id, Date created, String subject, String message, String username, int upvotes, int downvotes) {
+            super(id, created);
             mSubject = subject;
             mMessage = message;
             mUsername = username; //added
@@ -167,8 +173,8 @@ public class Database {
         /**
          * Construct a RowData object by providing values for its fields
          */
-        public UserRowData(int id, String username, String firstname, String lastname, String email) {
-            super(id, new Date());
+        public UserRowData(int id, Date created, String username, String firstname, String lastname, String email) {
+            super(id, created);
             mUsername = username;
             mFirstname = firstname;
             mLastName = lastname;
@@ -176,9 +182,9 @@ public class Database {
         }
     }
 
-    public static class VoteRowData {
+    public static class VoteRowData extends RowData {
         /**
-         * The ID of this row of the database
+         * The message id of this database row
          */
         int mId;
 
@@ -186,18 +192,19 @@ public class Database {
         /**
          * The username stored in this row
          */
-        String mUsername;//added
+        String mUsername;
 
         int mIs_upvote;
 
         /**
          * Construct a RowData object by providing values for its fields
          */
-        public VoteRowData(int id, int message_id, String username, int is_upvote) {
-            mId = id;
+        public VoteRowData(int id, Date created, int message_id, String username, int is_upvote) {
+            super(id, created);
+            mMessage_Id = message_id;
             mUsername = username;
             mIs_upvote = is_upvote;
-            mMessage_Id = message_id;
+            
         }
     }
 
@@ -227,7 +234,12 @@ public class Database {
     //static Database getDatabase(String db_url) {
 
         // Create an un-configured Database object
-        Database db = new Database();
+
+        // Java program implementing Singleton class 
+        // with getInstance() method 
+
+        if(db == null)
+            db = new Database();
 /*
         //Give the Database object a connection, fail if we cannot get one
         try {

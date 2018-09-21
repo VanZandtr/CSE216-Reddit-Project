@@ -31,7 +31,7 @@ public class MessageStore extends DataStore {
      * @return A copy of the data in the row, if it exists, or null otherwise
      */
     public synchronized Message readOne(int id) {
-        Database.RowData data = db.selectOne(id);
+        Database.MessageRowData data = db.selectOne(id);
         return data == null ? null : new Message(data.getId(), data.getSubject(), data.getMessage());
     }
 
@@ -82,7 +82,4 @@ public class MessageStore extends DataStore {
             return false;
         return (db.deleteRow(id) == -1) ? false : true;
     }
-}
-
-
 }

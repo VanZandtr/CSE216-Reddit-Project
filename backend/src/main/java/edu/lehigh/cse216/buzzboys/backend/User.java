@@ -15,22 +15,16 @@ public class User extends Row {
     /**
      * Every user enters a name field
      */
-    public final String uName;
+    public String uName;
 
     /**
-     * Create a new DataRow with the provided id and title/content, and a 
-     * creation date based on the system clock at the time the constructor was
-     * called
      * 
-     * @param id The id to associate with this row.  Assumed to be unique 
-     *           throughout the whole program.
-     * 
-     * @param title The title string for this row of data
-     * 
-     * @param content The content string for this row of data
+     * @param uid
+     * @param name
+     * @param dateCreated
      */
-    User(int uid, String name) {
-        super(uid);
+    User(int uid, String name, Date dateCreated) {
+        super(uid, dateCreated);
         uName = name;
     }
 
@@ -38,7 +32,9 @@ public class User extends Row {
      * Copy constructor to create one User from another
      */
     User(User data) {
-        super(data.id);
+        super(data.id, data.cDate);
         uName = data.uName;
+
+
     }
 }
