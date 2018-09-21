@@ -11,28 +11,40 @@ public class MessageStore extends DataStore {
     }
 
     /**
-     * Method to add a new message
+     * /**
+     * Add a new row to the DataStore
+     * 
+     * Note: we return -1 on an error.  There are many good ways to handle an 
+     * error, to include throwing an exception.  In robust code, returning -1 
+     * may not be the most appropriate technique, but it is sufficient for this 
+     * tutorial.
+     * 
      * @param name
+     * @param message
+     * @return int representing the id
+     */
+     * @param name
+     * @param message
      * @return
      */
-    public synchronized int createEntry(String name) {
+    public synchronized int createEntry(String name, String message) {
         if (name == null)
             return -1;
         int id = counter++;
-        Row data = new User(id, name);
-        //db add message row
+        Row data = new Message(id, new Date(), name, message, 0, 0, new Date());
+        db.insertMessageRow(subject, message, username, upvotes, downvotes)
         return id;
     }
 
-        /**
+    /**
      * Get one complete row from the DataStore using its ID to select it
      * 
      * @param id The id of the row to select
      * @return A copy of the data in the row, if it exists, or null otherwise
      */
     public synchronized Message readOne(int id) {
-        Database.MessageRowData data = db.selectOne(id);
-        return data == null ? null : new Message(data.getId(), data.getSubject(), data.getMessage());
+        Message data = db.selectOneMessage(id);
+        return (data == null) ? null : data;
     }
 
     /**

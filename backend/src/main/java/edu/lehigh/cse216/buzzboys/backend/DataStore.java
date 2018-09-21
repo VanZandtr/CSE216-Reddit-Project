@@ -16,12 +16,12 @@ public abstract class DataStore {
     /**
      * The rows of data in our DataStore
      */
-    static Database db;
+    Database db;
 
     /**
      * A counter for keeping track of the next ID to assign to a new row
      */
-    int counter;
+    public int counter;
 
 
 
@@ -31,8 +31,7 @@ public abstract class DataStore {
      */
     DataStore(String ip, String port, String user, String pass) {
         counter = 0;
-        if(db == null)
-            db = Database.getDatabase(ip, port, user, pass);
+        db = Database.getDatabase(ip, port, user, pass);
     }
 
     /**
@@ -48,15 +47,6 @@ public abstract class DataStore {
      * @return the ID of the new row, or -1 if no row was created
      */
 
-    
-    public synchronized int createEntry(String title, String content) {
-        if (title == null || content == null)
-            return -1;
-        // NB: we can safely assume that id is greater than the largest index in 
-        //     mRows, and thus we can use the index-based add() method
-        counter = db.insertRow(title, content);
-        return counter;
-    }
 
     /**
      * Get one complete row from the DataStore using its ID to select it

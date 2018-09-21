@@ -285,13 +285,13 @@ public class Database {
      *                                  "date_created TIMESTAMP NOT NULL, " + "last_updated TIMESTAMP NOT NULL)")
      * @return All rows, as an ArrayList
      */
-    ArrayList<Message> selectAllFromMessages() {
-        ArrayList<Message> res = new ArrayList<Message>();
+    ArrayList<MessageLite> selectAllFromMessages() {
+        ArrayList<MessageLite> res = new ArrayList<MessageLite>();
         try {
             ResultSet rs = mSelectAllFromMessages.executeQuery();
             
             while (rs.next()) {
-                res.add(new Message(rs.getInt("id"), rs.getDate("date_created"), rs.getString("subject"), null, rs.getString("username"), null, null, null));//added
+                res.add(new MessageLite(rs.getInt("id"), rs.getDate("date_created"), rs.getString("user"), rs.getString("subject"));
             }
             rs.close();
             return res;
@@ -314,12 +314,12 @@ public class Database {
 
      * @return All rows, as an ArrayList
      */
-    ArrayList<User> selectAllFromUsers() {
-        ArrayList<User> res = new ArrayList<User>();
+    ArrayList<UserLite> selectAllFromUsers() {
+        ArrayList<UserLite> res = new ArrayList<UserLIte>();
         try {
             ResultSet rs = mSelectAllFromUsers.executeQuery();
             while (rs.next()) {
-                res.add(new User(rs.getInt("id"), rs.getDate("date_created"), rs.getString("username"), rs.getString("firstname"), rs.getString("lastname"), null));//added
+                res.add(new UserLite(rs.getInt("id"), rs.getDate("date_created"), rs.getString("username"), rs.getString("firstname"), rs.getString("lastname")));//added
             }
             rs.close();
             return res;
@@ -509,21 +509,20 @@ public class Database {
 
     /**
      * Adds all votes to an arraylist
-     * Constructor: public VoteRowData(int id, Date created, 
-     *                                 int message_id, String username, 
-     *                                 Integer is_upvote)
+     * Constructor: public VoteLite(int id, Date created, 
+     *                                 int message_id, String username)
      * Schema: "CREATE TABLE votes (id SERIAL PRIMARY KEY, message_id INT NOT NULL, " + 
      *                              "username VARCHAR(20) NOT NULL, " + "is_upvote INT, " + 
      *                              "vote_date TIMESTAMP NOT NULL);//added
 
      * @return An arrayList with all votes excluding the is_upvote category
      */
-    ArrayList<Vote> selectAllFromVotes() {
+    ArrayList<VoteLite> selectAllFromVotes() {
         ArrayList<Vote> res = new ArrayList<Vote>();
         try {
             ResultSet rs = mSelectAllFromVotes.executeQuery();
             while (rs.next()) {
-                res.add(new Vote(rs.getInt("id"), rs.getDate("vote_date"), rs.getInt("message_id"), rs.getString("username"), null));//added
+                res.add(new Vote(rs.getInt("id"), rs.getDate("vote_date"), rs.getInt("message_id"), rs.getString("username")));//added
             }
             rs.close();
         } catch (SQLException e) {
@@ -642,6 +641,7 @@ public class Database {
 
     void dropVotesTable() {
         try {
+
             mDropVotesTable.execute();
         } catch (SQLException e) {
             e.printStackTrace();

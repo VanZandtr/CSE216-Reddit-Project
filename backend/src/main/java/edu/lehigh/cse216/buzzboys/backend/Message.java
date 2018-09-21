@@ -16,16 +16,7 @@ import java.util.Date;
  *                                + "upvotes INT NOT NULL, " + "downvotes INT NOT NULL, " 
  *                                + "dateCreated TIMESTAMP NOT NULL, " + "lastUpdated TIMESTAMP NOT NULL)"
  */
-public class Message extends Row {
-    /**
-     * Add the user of who posted message
-     */
-    public String userId;
-
-    /**
-     * The title for this message
-     */
-    public String mTitle;
+public class Message extends MessageLite {
 
     /**
      * The content for this message
@@ -61,10 +52,8 @@ public class Message extends Row {
      * @param last
      */
     Message(int id, Date dateCreated, String user, String title, String content, int up, int down, Date last) {
-        super(id, dateCreated);
-        mTitle = title;
+        super(id, dateCreated, user, title);
         mContent = content;
-        userId = user;
         upVotes = up;
         downVotes = down;
         lastUpdated = last;
@@ -74,11 +63,9 @@ public class Message extends Row {
      * Copy constructor to create one message from another
      */
     Message(Message data) {
-        super(data.id, data.cDate);
+        super(data.id, data.cDate, data.userId, data.mTitle);
         // NB: Strings and Dates are immutable, so copy-by-reference is safe
-        mTitle = data.mTitle;
         mContent = data.mContent;
-        userId = data.userId;
         upVotes = data.upVotes;
         downVotes = data.downVotes;
         lastUpdated = data.lastUpdated;
