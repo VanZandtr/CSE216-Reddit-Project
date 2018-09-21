@@ -58,7 +58,8 @@ public class Database {
     private PreparedStatement mSelectOneVote;
 
     private PreparedStatement mSelectAllFromVotes;
-    private PreparedStatement mselectVoteByMessageID;
+    private PreparedStatement mSelectVoteByMessageID;
+    private PreparedStatement mSelectVotebyUsername;
 
     private PreparedStatement mUpdateOneVote;
 
@@ -138,8 +139,8 @@ public class Database {
         /**
          * The number of likes stored in this row
          */
-        int mUpvotes;//added
-        int mDownvotes;
+        Integer mUpvotes;//added
+        Integer mDownvotes;
 
         /**
          * The last updated date
@@ -149,14 +150,14 @@ public class Database {
         /**
          * Construct a RowData object by providing values for its fields
          */
-        public MessageRowData(int id, Date created, String subject, String message, String username, int upvotes, int downvotes) {
+        public MessageRowData(int id, Date created, String subject, String message, String username, Integer upvotes, Integer downvotes, Date mostRecent) {
             super(id, created);
             mSubject = subject;
             mMessage = message;
             mUsername = username; //added
             mUpvotes = upvotes;//added
             mDownvotes = downvotes;
-            lastUpdate = new Date();
+            lastUpdate = mostRecent;
         }
     }
 
@@ -194,17 +195,16 @@ public class Database {
          */
         String mUsername;
 
-        int mIs_upvote;
+        Integer mIs_upvote;
 
         /**
          * Construct a RowData object by providing values for its fields
          */
-        public VoteRowData(int id, Date created, int message_id, String username, int is_upvote) {
+        public VoteRowData(int id, Date created, int message_id, String username, Integer is_upvote) {
             super(id, created);
             mMessage_Id = message_id;
             mUsername = username;
             mIs_upvote = is_upvote;
-            
         }
     }
 
@@ -292,11 +292,11 @@ public class Database {
             // Note: no "IF NOT EXISTS" or "IF EXISTS" checks on table 
             // creation/deletion, so multiple executions will cause an exception
             db.mCreateMessageTable = db.mConnection.prepareStatement(
-                    "CREATE TABLE messages (id SERIAL PRIMARY KEY, subject VARCHAR(50) NOT NULL, " + "message VARCHAR(500) NOT NULL, " + "username VARCHAR(20) NOT NULL, " + "upvotes INT NOT NULL, " + "downvotes INT NOT NULL, " + "dateCreated TIMESTAMP NOT NULL, " + "lastUpdated TIMESTAMP NOT NULL)");//added
+                    "CREATE TABLE messages (id SERIAL PRIMARY KEY, subject VARCHAR(50) NOT NULL, " + "message VARCHAR(500) NOT NULL, " + "username VARCHAR(20) NOT NULL, " + "upvotes INT NOT NULL, " + "downvotes INT NOT NULL, " + "date_created TIMESTAMP NOT NULL, " + "last_updated TIMESTAMP NOT NULL)");//added
             db.mCreateUserTable = db.mConnection.prepareStatement(
-                    "CREATE TABLE users(id SERIAL PRIMARY KEY, username VARCHAR(20) NOT NULL, " + "firstname VARCHAR(50), " + "lastname VARCHAR(50), " + "email VARCHAR(100), " + "dateCreated TIMESTAMP NOT NULL)");
+                    "CREATE TABLE users(id SERIAL PRIMARY KEY, username VARCHAR(20) NOT NULL, " + "firstname VARCHAR(50), " + "lastname VARCHAR(50), " + "email VARCHAR(100), " + "date_created TIMESTAMP NOT NULL)");
             db.mCreateVoteTable = db.mConnection.prepareStatement(
-                    "CREATE TABLE votes (id SERIAL PRIMARY KEY, message_id INT NOT NULL, " + "username VARCHAR(20) NOT NULL, " + "is_upvote INT, " + "voteDate TIMESTAMP NOT NULL)");//added
+                    "CREATE TABLE votes (id SERIAL PRIMARY KEY, message_id INT NOT NULL, " + "username VARCHAR(20) NOT NULL, " + "is_upvote INT, " + "vote_date TIMESTAMP NOT NULL)");//added
             db.mDropUsersTable = db.mConnection.prepareStatement("DROP TABLE users");
             db.mDropMessagesTable = db.mConnection.prepareStatement("DROP TABLE messages");
             db.mDropVotesTable = db.mConnection.prepareStatement("DROP TABLE votes");
@@ -317,7 +317,8 @@ public class Database {
             db.mDeleteVote = db.mConnection.prepareStatement("DELETE FROM votes WHERE id = ?");
             db.mSelectOneVote = db.mConnection.prepareStatement("SELECT * from votes WHERE id=?");
             db.mSelectAllFromVotes= db.mConnection.prepareStatement("SELECT id, message_id, username, is_upvote FROM votes");//added
-            db.mselectVoteByMessageID = db.mConnection.prepareStatement("SELECT * from votes WHERE message_id = ? AND username = ?");
+            db.mSelectVoteByMessageID = db.mConnection.prepareStatement("SELECT * from votes WHERE message_id = ? AND username = ?");
+            db.mSelectVotebyUsername = db.mConnection.prepareStatement("SELECT * from votes WHERE username = ?");
             db.mUpdateOneVote = db.mConnection.prepareStatement("UPDATE votes SET is_upvote = ? WHERE message_id = ? AND username = ?"); //add method
 
 
@@ -398,15 +399,22 @@ public class Database {
 
     /**
      * Query the database for a list of all subjects and their IDs
-     * 
+     * Constructor: //public MessageRowData(int id, Date created, String subject, 
+     *                                      String message, String username, 
+     *                                      Integer upvotes, Integer downvotes, Date mostRecent)
+     * Schema: "CREATE TABLE messages (id SERIAL PRIMARY KEY, subject VARCHAR(50) NOT NULL, " + 
+     *                                 "message VARCHAR(500) NOT NULL, " + "username VARCHAR(20) NOT NULL, " + 
+     *                                 "upvotes INT NOT NULL, " + "downvotes INT NOT NULL, " + 
+     *                                  "date_created TIMESTAMP NOT NULL, " + "last_updated TIMESTAMP NOT NULL)")
      * @return All rows, as an ArrayList
      */
-    ArrayList<MessageRowData> selectAllFromMessages() {
-        ArrayList<MessageRowData> res = new ArrayList<MessageRowData>();
+    ArrayList<Message> selectAllFromMessages() {
+        ArrayList<Message> res = new ArrayList<Message>();
         try {
             ResultSet rs = mSelectAllFromMessages.executeQuery();
+            
             while (rs.next()) {
-                res.add(new MessageRowData(rs.getInt("id"), rs.getString("subject"), null, rs.getString("username"), rs.getInt("upvotes"), rs.getInt("downvotes")));//added
+                res.add(new Message(rs.getInt("id"), rs.getDate("date_created"), rs.getString("subject"), null, rs.getString("username"), null, null, null));//added
             }
             rs.close();
             return res;
@@ -415,18 +423,26 @@ public class Database {
             return null;
         }
     }
+    
 
      /**
      * Query the database for a list of all users and their IDs
+     * Constructor: public UserRowData(int id, Date created, String username, 
+     *                                 String firstname, String lastname, String email)
+
+     * Schema: "CREATE TABLE users(id SERIAL PRIMARY KEY, username VARCHAR(20) NOT NULL, " + 
+     *                             "firstname VARCHAR(50), " + "lastname VARCHAR(50), " + 
+     *                              "email VARCHAR(100), " + "date_created TIMESTAMP NOT NULL)");
      * 
+
      * @return All rows, as an ArrayList
      */
-    ArrayList<UserRowData> selectAllFromUsers() {
-        ArrayList<UserRowData> res = new ArrayList<UserRowData>();
+    ArrayList<User> selectAllFromUsers() {
+        ArrayList<User> res = new ArrayList<User>();
         try {
             ResultSet rs = mSelectAllFromUsers.executeQuery();
             while (rs.next()) {
-                res.add(new UserRowData(rs.getInt("id"), rs.getString("username"), rs.getString("firstname"), rs.getString("lastname"), rs.getString("email")));//added
+                res.add(new User(rs.getInt("id"), rs.getDate("date_created"), rs.getString("username"), rs.getString("firstname"), rs.getString("lastname"), null));//added
             }
             rs.close();
             return res;
@@ -443,13 +459,13 @@ public class Database {
      * 
      * @return The data for the requested row, or null if the ID was invalid
      */
-    MessageRowData selectOneMessage(int id) {
-        MessageRowData res = null;
+    Message selectOneMessage(int id) {
+        Message res = null;
         try {
             mSelectOneMessage.setInt(1, id);
             ResultSet rs = mSelectOneMessage.executeQuery();
             if (rs.next()) {
-                res = new MessageRowData(rs.getInt("id"), rs.getString("subject"), rs.getString("message"), rs.getString("username"), rs.getInt("upvotes"), rs.getInt("downvotes"));//added
+                res = new Message(rs.getInt("id"), rs.getDate("date_created"), rs.getString("subject"), rs.getString("message"), rs.getString("username"), rs.getInt("upvotes"), rs.getInt("downvotes"), rs.getDate("last_updated"));//added
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -457,13 +473,13 @@ public class Database {
         return res;
     }
 
-    UserRowData selectOneUser(int id) {
-        UserRowData res = null;
+    User selectOneUser(int id) {
+        User res = null;
         try {
             mSelectOneUser.setInt(1, id);
             ResultSet rs = mSelectOneUser.executeQuery();
             if (rs.next()) {
-                res = new UserRowData(rs.getInt("id"), rs.getString("username"), rs.getString("firstname"), rs.getString("lastname"), rs.getString("email"));
+                res = new User(rs.getInt("id"), rs.getDate("date_created"), rs.getString("username"), rs.getString("firstname"), rs.getString("lastname"), rs.getString("email"));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -613,29 +629,41 @@ public class Database {
         return res;
     }
 
-    ArrayList<VoteRowData> selectAllFromVotes() {
-        ArrayList<VoteRowData> res = new ArrayList<VoteRowData>();
+
+    /**
+     * Adds all votes to an arraylist
+     * Constructor: public VoteRowData(int id, Date created, 
+     *                                 int message_id, String username, 
+     *                                 Integer is_upvote)
+     * Schema: "CREATE TABLE votes (id SERIAL PRIMARY KEY, message_id INT NOT NULL, " + 
+     *                              "username VARCHAR(20) NOT NULL, " + "is_upvote INT, " + 
+     *                              "vote_date TIMESTAMP NOT NULL);//added
+
+     * @return An arrayList with all votes excluding the is_upvote category
+     */
+    ArrayList<Vote> selectAllFromVotes() {
+        ArrayList<Vote> res = new ArrayList<Vote>();
         try {
             ResultSet rs = mSelectAllFromVotes.executeQuery();
             while (rs.next()) {
-                res.add(new VoteRowData(rs.getInt("id"), rs.getInt("message_id"), rs.getString("username"), rs.getInt("is_upvote")));//added
+                res.add(new Vote(rs.getInt("id"), rs.getDate("vote_date"), rs.getInt("message_id"), rs.getString("username"), null));//added
             }
             rs.close();
-            return res;
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
         }
+        return res;
     }
 
 
-    VoteRowData selectOneVote(int id) {
-        VoteRowData res = null;
+    Vote selectOneVote(int id) {
+        Vote res = null;
         try {
             mSelectOneVote.setInt(1, id);
             ResultSet rs = mSelectOneVote.executeQuery();
             if (rs.next()) {
-                res = new VoteRowData(rs.getInt("id"), rs.getInt("message_id"), rs.getString("username"), rs.getInt("is_upvote"));//added
+                res = new Vote(rs.getInt("id"), rs.getDate("vote_date"), rs.getInt("message_id"), rs.getString("username"), rs.getInt("is_upvote"));//added
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -643,18 +671,35 @@ public class Database {
         return res;
     }
 
-    VoteRowData selectVoteByMessageID(int message_id, String username) {
-        VoteRowData res = null;
+    Vote selectVoteByMessageID(int message_id, String username) {
+        Vote res = null;
         try {
-            mselectVoteByMessageID.setInt(1, message_id);
-            mselectVoteByMessageID.setString(2, username);
-            ResultSet rs = mselectVoteByMessageID.executeQuery();
+            mSelectVoteByMessageID.setInt(1, message_id);
+            mSelectVoteByMessageID.setString(2, username);
+            ResultSet rs = mSelectVoteByMessageID.executeQuery();
             if (rs.next()) {
-                res = new VoteRowData(rs.getInt("id"), rs.getInt("message_id"), rs.getString("username"), rs.getInt("is_upvote"));//added
+                res = new Vote(rs.getInt("id"), rs.getDate("vote_date"), rs.getInt("message_id"), rs.getString("username"), rs.getInt("is_upvote"));//added
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return res;
+    }
+
+    ArrayList<Vote> selectVoteByUsername(String username) {
+        ArrayList<Vote> res = new ArrayList<Vote>();
+        try {
+            mSelectVotebyUsername.setString(1, username);
+            ResultSet rs = mSelectVotebyUsername.executeQuery();
+            while(rs.next()) {
+                res.add(new Vote(rs.getInt("id"), rs.getDate("vote_date"), rs.getString("message_id"), rs.getString("username"), rs.getInt("is_upvote")));
+            }
+
+        } catch(SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+
         return res;
     }
 
