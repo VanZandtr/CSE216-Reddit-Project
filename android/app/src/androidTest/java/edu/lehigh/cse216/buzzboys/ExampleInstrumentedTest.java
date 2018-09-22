@@ -1,4 +1,4 @@
-package buzzboys.cse216.lehigh.edu.thebuzz;
+package edu.lehigh.cse216.buzzboys;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("buzzboys.cse216.lehigh.edu.thebuzz", appContext.getPackageName());
+        assertEquals("edu.lehigh.cse216.buzzboys", appContext.getPackageName());
     }
 }

@@ -1,4 +1,4 @@
-package buzzboys.cse216.lehigh.edu.thebuzz;
+package edu.lehigh.cse216.buzzboys;
 
 import org.junit.Test;
 

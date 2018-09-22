@@ -1,7 +1,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="buzzboys.cse216.lehigh.edu.thebuzz.MainActivity">
+    tools:context="edu.lehigh.cse216.buzzboys.MainActivity">
     <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"
