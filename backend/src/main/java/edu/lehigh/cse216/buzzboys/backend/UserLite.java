@@ -13,6 +13,7 @@ public class UserLite extends Row {
      * Last name of the user
      */
     String ulast;
+
     
     public UserLite(int id, Date date, String first, String last) {
         super(id, date);

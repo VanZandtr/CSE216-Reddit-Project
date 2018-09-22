@@ -1,6 +1,7 @@
 package edu.lehigh.cse216.buzzboys.backend;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * DataStore provides access to a set of objects, and makes sure that each has
@@ -47,6 +48,22 @@ public abstract class DataStore {
      * @return the ID of the new row, or -1 if no row was created
      */
 
+    /**
+     * Removes nulls from a list
+     * Useful when there is a chance that null rows will be apparent
+     * Be careful when using this because the time is O(kn)
+     * k being the number of nulls and n being the length of the list
+     * @param list
+     */
+    public synchronized void removeNulls(List<Row> list) {
+        while(list.remove(null));
+    }
+    
+    //Every type of store should have these methods
+    //Also need update and insert statements but they are hard to abstract
+    //There will be many different types of updates
+
+    //Might have to change type if java does allow me to return a Message in place of a Row
 
     /**
      * Get one complete row from the DataStore using its ID to select it
@@ -54,44 +71,14 @@ public abstract class DataStore {
      * @param id The id of the row to select
      * @return A copy of the data in the row, if it exists, or null otherwise
      */
-    public synchronized DataRow readOne(int id) {
-        Database.RowData data = db.selectOne(id);
-        return data == null ? null : new DataRow(data.getId(), data.getSubject(), data.getMessage());
-    }
+    public abstract synchronized Row readOne(int id);
 
     /**
      * Get all of the ids and titles that are present in the DataStore
-     * @return An ArrayList with all of the data
+     * @return A copy of the populated ArrayList with all of the data
      */
-    public synchronized ArrayList<DataRowLite> readAll() {
-    ArrayList<DataRowLite> data = new ArrayList<>();
-        // NB: we copy the data, so that our ArrayList only has ids and titles
-        for (Database.RowData row : db.selectAll()) {
-            if (row != null)
-                data.add(new DataRowLite(new DataRow(row.getId(), row.getSubject(), null)));
-        }
-        return data;
-    }
+    public abstract synchronized List<Row> readAll(); 
     
-    /**
-     * Update the title and content of a row in the DataStore
-     *
-     * @param id The Id of the row to update
-     * @param title The new title for the row
-     * @param content The new content for the row
-     * @return a copy of the data in the row, if it exists, or null otherwise
-     */
-    public synchronized DataRow updateOne(int id, String title, String content) {
-        // Do not update if we don't have valid data
-        if (title == null || content == null)
-            return null;
-        if(readOne(id) == null)
-            return null;
-        
-        // Only update if the current entry is valid (not null)
-        return (db.updateOne(id, title, content) == -1) ? null : new DataRow(id, title, content);
-
-    }
 
     /**
      * Delete a row from the DataStore
@@ -99,11 +86,4 @@ public abstract class DataStore {
      * @param id The Id of the row to delete
      * @return true if the row was deleted, false otherwise
      */
-    public synchronized boolean deleteOne(int id) {
-        // Deletion fails for an invalid Id or an Id that has already been 
-        // deleted
-        if(readOne(id) == null) 
-            return false;
-        return (db.deleteRow(id) == -1) ? false : true;
-    }
-}
+    public abstract synchronized boolean deleteOne(int id);

@@ -10,6 +10,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import java.util.Date;
 
@@ -25,61 +26,76 @@ public class Database {
      * be null.  Otherwise, there is a valid open connection
      */
     private Connection mConnection;
-    
-    private PreparedStatement mInsertOneMessage;
-    
-    private PreparedStatement mInsertOneUser;
-    
-    private PreparedStatement mSelectAllFromMessages;
-    
-    private PreparedStatement mSelectAllFromUsers;
 
-    private PreparedStatement mUpdateOneMessage;
-    private PreparedStatement mUpdateOneMessageUp;
-    private PreparedStatement mUpdateOneMessageDown;
+    /**
+     * Selecting rows
+     */
 
-    
-    private PreparedStatement mUpdateOneUser;
-
-    private PreparedStatement mCreateMessageTable;
-            
-    private PreparedStatement mCreateUserTable;
-
+    //Messages
     private PreparedStatement mSelectOneMessage;
+    private PreparedStatement mSelectAllFromMessages;
 
+    //Users
+    private PreparedStatement mSelectAllFromUsers;
     private PreparedStatement mSelectOneUser;
 
-    private PreparedStatement mCreateVoteTable;
-
-    private PreparedStatement mInsertVote;
-
-    private PreparedStatement mDeleteVote;
-
+    //Votes
     private PreparedStatement mSelectOneVote;
-
     private PreparedStatement mSelectAllFromVotes;
     private PreparedStatement mSelectVoteByMessageID;
     private PreparedStatement mSelectVotebyUsername;
 
+    /**
+     * Inserting rows
+     */
+    //Messages
+    private PreparedStatement mInsertOneMessage;
+
+    //Users
+    private PreparedStatement mInsertOneUser;
+
+    //Votes
+    private PreparedStatement mInsertVote;
+
+    /**
+     * Updating rows
+     */
+    //Messages
+    private PreparedStatement mUpdateOneMessage;
+    private PreparedStatement mUpdateOneMessageUp;
+    private PreparedStatement mUpdateOneMessageDown;
+    private PreparedStatement mUpdateOneMessageTitle;
+
+    //Users
+    private PreparedStatement mUpdateOneUser;
+
+    //Votes
     private PreparedStatement mUpdateOneVote;
 
-
-
     /**
-     * A prepared statement for deleting a row from the database
+     * Deleting rows
      */
-    private PreparedStatement mDeleteOneMessage;
 
-    private PreparedStatement mDeleteOneUser;
+     //Messages
+     private PreparedStatement mDeleteOneMessage;
+     //Users
+     private PreparedStatement mDeleteOneUser;
 
+     //Rows
+     private PreparedStatement mDeleteVote;
+    
+    /**
+     * Create table statements
+     */
+    private PreparedStatement mCreateMessageTable;        
+    private PreparedStatement mCreateUserTable;
+    private PreparedStatement mCreateVoteTable;
 
     /**
-     * A prepared statement for dropping the tables in our database
+     * Drop table statments
      */
     private PreparedStatement mDropMessagesTable;
-
     private PreparedStatement mDropUsersTable;
-
     private PreparedStatement mDropVotesTable;
 
     /**
@@ -187,6 +203,7 @@ public class Database {
             db.mSelectOneMessage = db.mConnection.prepareStatement("SELECT * from messages WHERE id = ?");
             db.mSelectOneUser = db.mConnection.prepareStatement("SELECT * from users WHERE id = ?");
             db.mUpdateOneMessage = db.mConnection.prepareStatement("UPDATE messages SET message = ?, lastUpdated = ? WHERE id = ?");
+            db.mUpdateOneMessageTitle = db.mConnection.prepareStatement("UPDATE messages set title = ? lastUpdated = ? WHERE id = ?");
             db.mUpdateOneUser = db.mConnection.prepareStatement("UPDATE users SET username = ?, firstname = ?, lastname = ?, email = ? WHERE id = ?");
             db.mUpdateOneMessageUp = db.mConnection.prepareStatement("UPDATE messages SET upvotes = ? WHERE id = ?");
             db.mUpdateOneMessageDown = db.mConnection.prepareStatement("UPDATE messages SET downvotes = ? WHERE id = ?");
@@ -285,8 +302,8 @@ public class Database {
      *                                  "date_created TIMESTAMP NOT NULL, " + "last_updated TIMESTAMP NOT NULL)")
      * @return All rows, as an ArrayList
      */
-    ArrayList<MessageLite> selectAllFromMessages() {
-        ArrayList<MessageLite> res = new ArrayList<MessageLite>();
+    List<MessageLite> selectAllFromMessages() {
+        List<MessageLite> res = new ArrayList<MessageLite>();
         try {
             ResultSet rs = mSelectAllFromMessages.executeQuery();
             
@@ -314,12 +331,12 @@ public class Database {
 
      * @return All rows, as an ArrayList
      */
-    ArrayList<UserLite> selectAllFromUsers() {
-        ArrayList<UserLite> res = new ArrayList<UserLIte>();
+    List<UserLite> selectAllFromUsers() {
+        List<UserLite> res = new ArrayList<UserLIte>();
         try {
             ResultSet rs = mSelectAllFromUsers.executeQuery();
             while (rs.next()) {
-                res.add(new UserLite(rs.getInt("id"), rs.getDate("date_created"), rs.getString("username"), rs.getString("firstname"), rs.getString("lastname")));//added
+                res.add(new UserLite(rs.getInt("id"), rs.getDate("date_created"), rs.getString("firstname"), rs.getString("lastname")));//added
             }
             rs.close();
             return res;
@@ -356,7 +373,7 @@ public class Database {
             mSelectOneUser.setInt(1, id);
             ResultSet rs = mSelectOneUser.executeQuery();
             if (rs.next()) {
-                res = new User(rs.getInt("id"), rs.getDate("date_created"), rs.getString("username"), rs.getString("firstname"), rs.getString("lastname"), rs.getString("email"));
+                res = new User(rs.getInt("id"), rs.getDate("date_created"), rs.getString("firstname"), rs.getString("lastname"), rs.getString("username"), rs.getString("email"));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -408,6 +425,19 @@ public class Database {
             mUpdateOneMessage.setTimestamp(2, new Timestamp(new Date().getTime()));
             mUpdateOneMessage.setInt(3, id);
             res = mUpdateOneMessage.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+    
+    int updateOneMessageTitle(int id, String title) {
+        int res = -1;
+        try {
+            mUpdateOneMessageTitle.setString(1, title);
+            mUpdateOneMessageTitle.setTimestamp(2, new Timestamp(new Date().getTime()));
+            mupdateOneMessageTitle.setInt(3, id);
+            res = mUpdateOneMessageTitle.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -517,12 +547,12 @@ public class Database {
 
      * @return An arrayList with all votes excluding the is_upvote category
      */
-    ArrayList<VoteLite> selectAllFromVotes() {
-        ArrayList<Vote> res = new ArrayList<Vote>();
+    List<VoteLite> selectAllFromVotes() {
+        List<VoteLite> res = new ArrayList<VoteLite>();
         try {
             ResultSet rs = mSelectAllFromVotes.executeQuery();
             while (rs.next()) {
-                res.add(new Vote(rs.getInt("id"), rs.getDate("vote_date"), rs.getInt("message_id"), rs.getString("username")));//added
+                res.add(new VoteLite(rs.getInt("id"), rs.getDate("vote_date"), rs.getInt("message_id"), rs.getString("username")));//added
             }
             rs.close();
         } catch (SQLException e) {
@@ -562,7 +592,7 @@ public class Database {
         return res;
     }
 
-    ArrayList<Vote> selectVoteByUsername(String username) {
+    List<Vote> selectVoteByUsername(String username) {
         ArrayList<Vote> res = new ArrayList<Vote>();
         try {
             mSelectVotebyUsername.setString(1, username);
@@ -582,11 +612,7 @@ public class Database {
     int updateVote(int message_id, String username, Integer is_upvote) {
         int res = -1;
         try {
-            if(is_upvote == null)
-                mUpdateOneVote.setInt(1, is_upvote);
-            else 
-                mUpdateOneVote.setInt(1, is_upvote.intValue());
-            
+            mUpdateOneVote.setInt(1, is_upvote);
             mUpdateOneVote.setInt(2, message_id);
             mUpdateOneVote.setString(3, username);
             res = mUpdateOneVote.executeUpdate();

@@ -22,16 +22,23 @@ public class User extends UserLite {
     public String email;
 
     /**
-     * Complete user constructor
+     * Every user has a username
+     */
+    public String username;
+
+    /**
+     * Full constructor for user
      * @param uid
      * @param dateCreated
      * @param first
      * @param last
-     * @param email
+     * @param user
+     * @param mail
      */
-    User(int uid, Date dateCreated, String first, String last, String mail) {
+    User(int uid, Date dateCreated, String first, String last, String user, String mail) {
         super(uid, dateCreated, first, last);
         email = mail;
+        username = name;
     }
 
     /**
@@ -39,6 +46,7 @@ public class User extends UserLite {
      */
     User(User data) {
         super(data.id, data.cDate, data.first, data.last);
-        uName = data.email;
+        email = data.email;
+        username = data.username;
     }
 }
