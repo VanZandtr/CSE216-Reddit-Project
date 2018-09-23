@@ -1,5 +1,9 @@
 package edu.lehigh.cse216.buzzboys.backend;
 
+import java.util.List;
+import java.util.ArrayList;
+
+
 public class UserStore extends DataStore<UserLite, User> {
     /**
      * Constructor to build operations for userstore
@@ -8,8 +12,8 @@ public class UserStore extends DataStore<UserLite, User> {
      * @param user
      * @param pass
      */
-    public UserStore(String ip, String port, String user, String pass) {
-        super(ip, port, user, pass);
+    public UserStore() {
+        super();
     }
 
     /**
@@ -22,7 +26,7 @@ public class UserStore extends DataStore<UserLite, User> {
      */
     public synchronized int createEntry(String first, String last, String user, String mail) {
         if(first == null || last == null || user == null)
-            return null;
+            return -1;
         return (db.insertUserRow(user, first, last, mail) == -1) ? -1 : counter++;
     }
 
@@ -31,7 +35,7 @@ public class UserStore extends DataStore<UserLite, User> {
      */
     @Override
     public synchronized User readOne(int id) {
-        User data = db.mSelectOneUser(id);
+        User data = db.selectOneUser(id);
         return (data == null) ? null : data;
     }
 
@@ -40,9 +44,8 @@ public class UserStore extends DataStore<UserLite, User> {
      */
     @Override
     public synchronized List<UserLite> readAll() {
-        List<UserLite> userList = new ArrayList<UserLite>(db.selectAllFromMessages());
+        List<UserLite> userList = new ArrayList<UserLite>(db.selectAllFromUsers());
         return (userList == null) ? null : userList;
-        
     }
 
     /**
@@ -55,10 +58,10 @@ public class UserStore extends DataStore<UserLite, User> {
      * @param email
      * @return
      */
-    public synchronized boolean updateOne(int id, String username, String firstname, String lastname, String email) {
+    public synchronized User updateOne(int id, String username, String firstname, String lastname, String email) {
         if(readOne(id) == null || username == null || firstname == null || lastname == null)
-            return false;
-        return (db.updateOneUser(id, username, firstname, lastname, email) == -1) ? false : true;
+            return null;
+        return (db.updateOneUser(id, username, firstname, lastname, email) == -1) ? null : new User(db.selectOneUser(id));
     }
 
     /**

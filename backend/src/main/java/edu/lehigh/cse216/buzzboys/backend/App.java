@@ -124,9 +124,9 @@ public class App {
             // ensure status 200 OK, with a MIME type of JSON
             response.status(200);
             response.type("application/json");
-            Message result = store.msg.updateMessageTitle(idx, req.mTitle, req.mContent);
+            Message result = store.msg.updateMessage(idx, req.mTitle, req.mContent);
 
-            if (result1 == null || result2 == null) {
+            if (result == null) {
                 return gson.toJson(new StructuredResponse("error", "unable to update row " + idx, null));
             } else {
                 return gson.toJson(new StructuredResponse("ok", null, result));
@@ -146,7 +146,7 @@ public class App {
             if (!result) {
                 return gson.toJson(new StructuredResponse("error", "unable to delete row " + idx, null));
             } else {
-                return gson.toJson(new StructuredResponse("ok", null, result));
+                return gson.toJson(new StructuredResponse("ok", null, null));
             }
         });
 
@@ -272,12 +272,12 @@ public class App {
             response.status(200);
             response.type("application/json");
             
-            Message data = store.msg.updateUpvote(idx, upvotes);
+            Boolean data = store.msg.updateUpvote(idx, upvotes);
             //you need to add the votes table functionality, queries with joins need to be made and methods implemented
-            if (data == null) {
-                return gson.toJson(new StructuredResponse("error", idx + " not found", null));
+            if (!data) {
+                return gson.toJson(new StructuredResponse("error", idx + "not found or updated failed", null));
             } else {
-                return gson.toJson(new StructuredResponse("ok", null, data));
+                return gson.toJson(new StructuredResponse("ok", null, null));
             }
         });
 
@@ -288,12 +288,12 @@ public class App {
             response.status(200);
             response.type("application/json");
             
-            Message data = store
+            boolean data = store.msg.updateDownvote(idx, downvotes);
             //you need to add the votes table functionality, queries with joins need to be made and methods implemented
-            if (data == null) {
-                return gson.toJson(new StructuredResponse("error", idx + " not found", null));
+            if (!data) {
+                return gson.toJson(new StructuredResponse("error", idx + " not found or update failed", null));
             } else {
-                return gson.toJson(new StructuredResponse("ok", null, data));
+                return gson.toJson(new StructuredResponse("ok", null, null));
             }
         });
 

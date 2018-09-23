@@ -13,8 +13,8 @@ public class VoteStore extends DataStore<VoteLite, Vote> {
      * Reset counter and create a new ArrayList
      * TODO: for all methods, get the database implementation
      */
-    public VoteStore(String ip, String port, String user, String pass) {
-        super(ip, port, user, pass);
+    public VoteStore() {
+        super();
     }
 
     public int createEntry(int msg_id, String username, Integer is_upvote) {
@@ -32,7 +32,7 @@ public class VoteStore extends DataStore<VoteLite, Vote> {
     @Override
     public synchronized Vote readOne(int id) {
         Vote data = db.selectOneVote(id);
-        (data == null) ? null : data;
+        return (data == null) ? null : data;
     }
 
     /**
@@ -42,32 +42,39 @@ public class VoteStore extends DataStore<VoteLite, Vote> {
     @Override
     public synchronized List<VoteLite> readAll() {
         List<VoteLite> voteList = new ArrayList<VoteLite>(db.selectAllFromVotes());
-        (voteList == null) ? null : voteList;
+        return (voteList == null) ? null : voteList;
     }
 
     public synchronized Vote readVoteByMessageAndUsername(int msgId, String userId) {
         Vote vote = new Vote(db.selectVotesByMessageIDAndUsername(msgId, userId));
-        (vote == null) ? null : vote;
+        return (vote == null) ? null : vote;
     }
 
     public synchronized List<Vote> readAllByMessageid(int msgId) {
-        List<Vote> voteList = new ArrayList<Vote>(db.selectVotesByMessageID(msgId));
-        (voteList == null) ? null : voteList;
+        List<Vote> voteList = new ArrayList<Vote>(db.selectVotesMessageId(msgId));
+        return (voteList == null) ? null : voteList;
     }
 
 
 
     public synchronized List<Vote> readAllByUserId(String userId) {
-        List<Vote> voteList = new ArrayList<Vote>(db.selectVotesByMessageID(msgId));
-        (voteList == null) ? null : voteList;
+        List<Vote> voteList = new ArrayList<Vote>(db.selectVoteByUsername(userId));
+        return (voteList == null) ? null : voteList;
     }
 
-    public synchronized Vote mUpdateOneVote(int msg_id, String username, Integer is_upvote) {
+    /**
+     * updates a vote row (will write queries to get actual vote with join queries)
+     * as of now updates and returns int
+     * @param msg_id
+     * @param username
+     * @param is_upvote
+     * @return
+     */
+    public synchronized boolean mUpdateOneVote(int msg_id, String username, Integer is_upvote) {
         //need to add protection against inept voteid and msg_id
         if(username == null)
-            return null;
-        User data = db.updateVote(msg_id, username, is_upvote);
-        return (data == null) ? null : data;
+            return false;
+        return (db.updateVote(msg_id, username, is_upvote) == -1) ? false : true;
     }
 
     /**

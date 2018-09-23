@@ -9,8 +9,8 @@ import java.sql.Timestamp;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.ArrayList;
 
 import org.eclipse.jetty.server.ConnectionLimit;
 
@@ -127,7 +127,7 @@ public class Database {
      * @return A Database object, or null if we cannot connect properly
      */
     
-    static Database getDatabase(String ip, String port, String user, String pass) {
+    static Database getDatabase() {
     //static Database getDatabase(String db_url) {
 
         // Create an un-configured Database object
@@ -203,7 +203,7 @@ public class Database {
      * @param db
      * @return
      */
-    void connect(Database db) {
+    static void connect(Database db) {
         //Give the Database object a connection, fail if we cannot get one
         String db_url = "postgres://bqmyghussmyoch:0b4491be62bc014a18f2f4c7795067a7e1c898b2bf20102729254cbdf748f9cf@ec2-54-83-27-165.compute-1.amazonaws.com:5432/d27ergo5pr6bta";
         try {
@@ -222,7 +222,6 @@ public class Database {
         } catch (SQLException e) {
             System.err.println("Error: DriverManager.getConnection() threw a SQLException");
             e.printStackTrace();
-            return null;
         } catch (ClassNotFoundException cnfe) {
             System.out.println("Unable to find postgresql driver");
         } catch (URISyntaxException s) {
@@ -297,7 +296,7 @@ public class Database {
     }
 
     /**
-     * Query the database for a list of all subjects and their IDs
+     * Query the database for a ArrayList of all subjects and their IDs
      * Constructor: //public MessageRowData(int id, Date created, String subject, 
      *                                      String message, String username, 
      *                                      Integer upvotes, Integer downvotes, Date mostRecent)
@@ -313,7 +312,7 @@ public class Database {
             ResultSet rs = mSelectAllFromMessages.executeQuery();
             
             while (rs.next()) {
-                res.add(new MessageLite(rs.getInt("id"), rs.getDate("date_created"), rs.getString("user"), rs.getString("subject"));
+                res.add(new MessageLite(rs.getInt("id"), rs.getDate("date_created"), rs.getString("user"), rs.getString("subject")));
             }
             rs.close();
             return res;
@@ -336,6 +335,7 @@ public class Database {
 
      * @return All rows, as an ArrayList
      */
+    
     List<UserLite> selectAllFromUsers() {
         List<UserLite> res = new ArrayList<UserLite>();
         try {
@@ -343,7 +343,6 @@ public class Database {
             while (rs.next())
                 res.add(new UserLite(rs.getInt("id"), new Date(rs.getTimestamp("date_created").getTime()), rs.getString("firstname"), rs.getString("lastname")));//added
             rs.close();
-            return res;
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
@@ -521,8 +520,8 @@ public class Database {
     int deleteVoteRow(int id){
         int res = -1;
         try {
-            mDeleteVote.setInt(1, id);
-            res = mDeleteVote.executeUpdate();
+            mDeleteOneVote.setInt(1, id);
+            res = mDeleteOneVote.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -573,10 +572,10 @@ public class Database {
     Vote selectVotesByMessageIDAndUsername(int message_id, String username) {
         Vote res = null;
         try {
-            mSelectVoteByMessageIDAndUsername.setInt(1, message_id);
-            mSelectVoteByMessageIDAndUsername.setString(2, username);
-            ResultSet rs = mSelectVoteByMessageIDAndUsername.executeQuery();
-            res = new Vote(rs.getInt("id"), rs.getDate("vote_date"), rs.getInt("message_id"), rs.getString("username"), rs.getInt("is_upvote")));//added
+            mSelectVoteByMessageAndUsername.setInt(1, message_id);
+            mSelectVoteByMessageAndUsername.setString(2, username);
+            ResultSet rs = mSelectVoteByMessageAndUsername.executeQuery();
+            res = new Vote(rs.getInt("id"), rs.getDate("vote_date"), rs.getInt("message_id"), rs.getString("username"), rs.getInt("is_upvote"));//added
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -587,10 +586,10 @@ public class Database {
     List<Vote> selectVotesMessageId(int message_id) {
         List<Vote> res = new ArrayList<Vote>();
         try {
-            mSelectVoteByMessageID.setInt(1, message_id);
-            ResultSet rs = mSelectVoteByMessageID.executeQuery();
+            mSelectVotesByMessageID.setInt(1, message_id);
+            ResultSet rs = mSelectVotesByMessageID.executeQuery();
             while(rs.next()) {
-                res.add(new Vote(rs.getInt("id"), new Date(rs.getTimestamp("vote_date").getTime()), rs.getString("message_id"), rs.getString("username"), rs.getInt("is_upvote")));
+                res.add(new Vote(rs.getInt("id"), new Date(rs.getTimestamp("vote_date").getTime()), rs.getInt("message_id"), rs.getString("username"), rs.getInt("is_upvote")));
             }
 
         } catch (SQLException e) {
@@ -606,7 +605,7 @@ public class Database {
             mSelectVoteByUsername.setString(1, username);
             ResultSet rs = mSelectVoteByUsername.executeQuery();
             while(rs.next()) {
-                res.add(new Vote(rs.getInt("id"), new Date(rs.getTimestamp("vote_date").getTime()), rs.getString("message_id"), rs.getString("username"), rs.getInt("is_upvote")));
+                res.add(new Vote(rs.getInt("id"), new Date(rs.getTimestamp("vote_date").getTime()), rs.getInt("message_id"), rs.getString("username"), rs.getInt("is_upvote")));
             }
 
         } catch(SQLException e) {

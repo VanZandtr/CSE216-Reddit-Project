@@ -11,8 +11,8 @@ public class MessageStore extends DataStore<MessageLite, Message> {
      * Reset counter and create a new ArrayList
      * TODO: for all methods, get the database implementation
      */
-    public MessageStore(String ip, String port, String user, String pass) {
-        super(ip, port, user, pass);
+    public MessageStore() {
+        super();
     }
 
     /**
@@ -59,9 +59,15 @@ public class MessageStore extends DataStore<MessageLite, Message> {
         return (msgList == null) ? null : msgList;
     }
 
+    /*/**
+     * This reads everything from the user
+     * TODO: need to make a query with joins to get this
+     * @param username
+     * @return
+    
     public synchronized List<Message> readAllFromUser(String username) {
 
-    }
+    }*/
     
     /**
      * Update the title and content of a row in the DataStore

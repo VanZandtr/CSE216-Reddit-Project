@@ -13,7 +13,7 @@ import java.util.List;
  * NB: The methods of DataStore are synchronized, since they will be used from a 
  * web framework and there may be multiple concurrent accesses to the DataStore.
  */
-public abstract class DataStore<T extends Row, U extends T> {
+public abstract class DataStore<T extends Row, U extends Row> {
     /**
      * The rows of data in our DataStore
      */
@@ -32,7 +32,7 @@ public abstract class DataStore<T extends Row, U extends T> {
      */
     DataStore() {
         counter = 0;
-        db = Database.getDatabase()
+        db = Database.getDatabase();
     }
 
     /**
@@ -71,13 +71,13 @@ public abstract class DataStore<T extends Row, U extends T> {
      * @param id The id of the row to select
      * @return A copy of the data in the row, if it exists, or null otherwise
      */
-    public abstract synchronized U readOne(int id);
+    public abstract U readOne(int id);
 
     /**
      * Get all of the ids and titles that are present in the DataStore
      * @return A copy of the populated ArrayList with all of the data
      */
-    public abstract synchronized List<T> readAll(); 
+    public abstract List<T> readAll(); 
     
 
     /**
@@ -86,5 +86,5 @@ public abstract class DataStore<T extends Row, U extends T> {
      * @param id The Id of the row to delete
      * @return true if the row was deleted, false otherwise
      */
-    public abstract synchronized boolean deleteOne(int id);
+    public abstract boolean deleteOne(int id);
 }
