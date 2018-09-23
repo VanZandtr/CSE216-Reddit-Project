@@ -7,7 +7,7 @@ package edu.lehigh.cse216.buzzboys.backend;
  * NB: since this will be created from JSON, all fields must be public, and we
  *     do not need a constructor.
  */
-public class SimpleRequest {
+public class SimpleRequest extends Row {
     /**
      * The title being provided by the client.
      */

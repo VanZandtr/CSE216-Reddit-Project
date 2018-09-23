@@ -23,7 +23,7 @@ public class StructuredResponse {
      * Any JSON-friendly object can be referenced here, so that we can have a
      * rich reply to the client
      */
-    public Object mData;
+    public Row mData;
 
     /**
      * Construct a StructuredResponse by providing a status, message, and data.
@@ -33,7 +33,7 @@ public class StructuredResponse {
      * @param message The message to go along with an error status
      * @param object An object with additional data to send to the client
      */
-    public StructuredResponse(String status, String message, Object data) {
+    public StructuredResponse(String status, String message, Row data) {
         mStatus = (status != null) ? status : "invalid";
         mMessage = message;
         mData = data;

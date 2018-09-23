@@ -18,4 +18,10 @@ public class MessageLite extends Row {
         mTitle = title;
     }
 
+    public MessageLite(MessageLite data) {
+        super(data.id, data.cDate);
+        userId = data.userId;
+        mTitle = data.mTitle;
+    }
+
 }

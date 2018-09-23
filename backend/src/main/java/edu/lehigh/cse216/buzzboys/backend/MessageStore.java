@@ -24,17 +24,14 @@ public class MessageStore extends DataStore {
      * may not be the most appropriate technique, but it is sufficient for this 
      * tutorial.
      * 
-     * @param name
+     * @param title
      * @param message
      * @return int representing the id
      */
-    public synchronized int createEntry(String title, String message) {
-        if (name == null)
+    public synchronized int createEntry(String title, String message, String username) {
+        if (title == null || username == null)
             return -1;
-        int id = counter++;
-        Row data = new Message(id, new Date(), name, message, 0, 0, new Date());
-        db.insertMessageRow(subject, message, username, upvotes, downvotes)
-        return id;
+        return (db.insertMessageRow(title, message, username, 0, 0) == -1) ? -1 : counter++;
     }
 
     /**
@@ -59,7 +56,7 @@ public class MessageStore extends DataStore {
         List<MessageRowLite> msgList = new ArrayList<MessageRowLite>(db.selectAllFromMessages());
         //remove all nulls from list
         //removeNulls(msgList);
-        return msgList;
+        return (msgList == null) ? null : msgList;
     }
     
     /**
@@ -69,13 +66,13 @@ public class MessageStore extends DataStore {
      * @param content The new content for the row
      * @return a copy of the data in the row, if it exists, or null otherwise
      */
-    public synchronized Message updateMessageContent(int id, String content) {
+    public synchronized Message updateMessage(int id, String content) {
         // Do not update if we don't have valid data
         if (content == null || readOne(id) == null)
             return null;
         
         // Only update if the current entry is valid (not null)
-        (db.updateOneMessage(id, content) == -1) ? null : new Message(db.selectOneMessage(id));
+        return (db.updateOneMessage(id, content) == -1) ? null : new Message(db.selectOneMessage(id));
     }
     /**
      * Update the title of a message and return the new full Message row
@@ -87,7 +84,7 @@ public class MessageStore extends DataStore {
         if content == null || readOne(id) == null)
             return null;
 
-        (db.updateOneMessageTitle(id, title) == -1) ? null : new Message(db.selectOneMessage(id));
+        return (db.updateOneMessageTitle(id, title) == -1) ? null : new Message(db.selectOneMessage(id));
     }
     
     /*For updating the upvotes and downvotes, do the computation to get the current
@@ -122,8 +119,6 @@ public class MessageStore extends DataStore {
      */
     @Override
     public synchronized boolean deleteOne(int id) {
-        // Deletion fails for an invalid Id or an Id that has already been 
-        // deleted
-        readOne(id) == null) ? false : (db.deleteRow(id) == -1) ? false : true;
+        return (readOne(id) == null) ? false : (db.deleteMessageRow(id) == -1) ? false : true;
     }
 }

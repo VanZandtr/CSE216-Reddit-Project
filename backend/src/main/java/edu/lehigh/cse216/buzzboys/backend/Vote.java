@@ -27,4 +27,9 @@ public class Vote extends VoteLite {
         is_upvote = vote;
     }
 
+    public Vote(Vote data) {
+        super(data.id, data.cDate, data.mId, data.username);
+        is_upvote = data.is_upvote;
+    }
+
 }

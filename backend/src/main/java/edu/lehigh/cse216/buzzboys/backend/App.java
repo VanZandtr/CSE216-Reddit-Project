@@ -10,6 +10,14 @@ import java.util.Map;
 
 /**
  * For now, our app creates an HTTP server that can only get and add data.
+ * REST ENDPOINTS:
+ * /users (GET, POST, DELETE) 		-> all users
+ * /messages (GET, POST, DELETE)  		-> all messages
+ * /users/id (GET, POST, DELETE)		->one user
+ * /user/id/messages (GET)			->messages for a given user
+ * /messages/id	(GET, PUT, DELETE)		->one message
+ * /messages/id/upvote (PUT)			->(action) upvotes a post
+ * /messages/id/downvote (PUT)		->(action) downvotes a post
  */
 public class App {
     public static void main(String[] args) {
@@ -34,10 +42,11 @@ public class App {
         // NB: every time we shut down the server, we will lose all data, and 
         //     every time we start the server, we'll have an empty dataStore,
         //     with IDs starting over from 0.
-        final DataStore userStore = new UserStore(ip, port, user, pass);
-        final DataStore msgStore = new MessageStore(ip, port, user, pass);
+        final MessageStore msg = new MessageStore(ip, port, user, pass);
+        final UserStore user = new UserStore(ip, port, user, pass);
+        final DataStore vote = new VoteStore(ip, port, user, pass);
 
-        // Set up the location for serving static files
+        /*// Set up the location for serving static files
         // Set up the location for serving static files.  If the STATIC_LOCATION
         // environment variable is set, we will serve from it.  Otherwise, serve
         // from "/web"
@@ -46,7 +55,7 @@ public class App {
             Spark.staticFileLocation("/web");
         } else {
             Spark.staticFiles.externalLocation(static_location_override);
-        }
+        } */
         
         // GET route that returns all message titles and Ids.  All we do is get 
         // the data, embed it in a StructuredResponse, turn it into JSON, and 
