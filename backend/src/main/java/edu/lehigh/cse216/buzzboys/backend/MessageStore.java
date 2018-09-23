@@ -5,7 +5,7 @@ import java.util.ArrayList;;
 
 import java.util.Date;
 
-public class MessageStore extends DataStore {
+public class MessageStore extends DataStore<MessageLite, Message> {
     /**
      * Construct message store by calling super constructor DataStore.
      * Reset counter and create a new ArrayList
@@ -51,12 +51,16 @@ public class MessageStore extends DataStore {
      * @return An ArrayList with all of the data
      */
     @Override
-    public synchronized List<MessageRowLite> readAll() {
+    public synchronized List<MessageLite> readAll() {
         // NB: we copy the data returned from selectAllFrom Messages
-        List<MessageRowLite> msgList = new ArrayList<MessageRowLite>(db.selectAllFromMessages());
+        List<MessageLite> msgList = new ArrayList<MessageLite>(db.selectAllFromMessages());
         //remove all nulls from list
         //removeNulls(msgList);
         return (msgList == null) ? null : msgList;
+    }
+
+    public synchronized List<Message> readAllFromUser(String username) {
+
     }
     
     /**
@@ -66,31 +70,19 @@ public class MessageStore extends DataStore {
      * @param content The new content for the row
      * @return a copy of the data in the row, if it exists, or null otherwise
      */
-    public synchronized Message updateMessage(int id, String content) {
+    public synchronized Message updateMessage(int id, String title, String content) {
         // Do not update if we don't have valid data
         if (content == null || readOne(id) == null)
             return null;
         
         // Only update if the current entry is valid (not null)
-        return (db.updateOneMessage(id, content) == -1) ? null : new Message(db.selectOneMessage(id));
+        return (db.updateOneMessage(id, title, content) == -1) ? null : new Message(db.selectOneMessage(id));
     }
-    /**
-     * Update the title of a message and return the new full Message row
-     * @param id
-     * @param title
-     * @return
-     */
-    public synchronized Message updateMessageTitle(int id, String title) {
-        if content == null || readOne(id) == null)
-            return null;
-
-        return (db.updateOneMessageTitle(id, title) == -1) ? null : new Message(db.selectOneMessage(id));
-    }
-    
+   
     /*For updating the upvotes and downvotes, do the computation to get the current
       number of upvotes/downvotes + 1 response from the front end, that way we don't
       have to make a call to the database when we wanna increment the number of votes
-
+    */
     /**
      * Update the upvotes of a message
      * @param id
@@ -98,7 +90,7 @@ public class MessageStore extends DataStore {
      * @return
      */
     public synchronized boolean updateUpvote(int id, int upvotes) {
-        (db.updateOneMessageUp(id, upvotes) == -1) ? false : true;
+        return (readOne(id) == null) ? false : (db.updateOneMessageUp(id, upvotes) == -1) ? false : true;
     }
 
     /**
@@ -108,7 +100,7 @@ public class MessageStore extends DataStore {
      * @return
      */
     public synchronized boolean updateDownvote(int id, int downvotes) {
-        (db.updateOneMessageDown(id, downvotes) == -1) ? false : true;
+        return (readOne(id) == null) ? false : (db.updateOneMessageDown(id, downvotes) == -1) ? false : true;
     }
 
     /**

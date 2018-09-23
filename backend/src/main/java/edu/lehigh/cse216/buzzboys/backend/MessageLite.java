@@ -1,5 +1,7 @@
 package edu.lehigh.cse216.buzzboys.backend;
 
+import java.util.Date;
+
 public class MessageLite extends Row {
 
     /**
@@ -14,7 +16,7 @@ public class MessageLite extends Row {
 
     public MessageLite(int id, Date dateCreated, String user, String title) {
         super(id, dateCreated);
-        userid = user;
+        userId = user;
         mTitle = title;
     }
 

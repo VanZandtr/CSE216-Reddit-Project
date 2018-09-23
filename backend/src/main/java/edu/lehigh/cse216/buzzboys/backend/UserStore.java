@@ -1,6 +1,6 @@
 package edu.lehigh.cse216.buzzboys.backend;
 
-public class UserStore extends DataStore {
+public class UserStore extends DataStore<UserLite, User> {
     /**
      * Constructor to build operations for userstore
      * @param ip
@@ -23,7 +23,7 @@ public class UserStore extends DataStore {
     public synchronized int createEntry(String first, String last, String user, String mail) {
         if(first == null || last == null || user == null)
             return null;
-        (db.insertUserRow(user, first, last, mail) == -1) ? -1 : counter++;
+        return (db.insertUserRow(user, first, last, mail) == -1) ? -1 : counter++;
     }
 
     /**

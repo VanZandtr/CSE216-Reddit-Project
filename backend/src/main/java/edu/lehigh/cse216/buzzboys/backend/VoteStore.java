@@ -5,7 +5,7 @@ import java.util.ArrayList;
 
 import java.util.Date;
 
-public class VoteStore extends DataStore {
+public class VoteStore extends DataStore<VoteLite, Vote> {
 
 
      /**

@@ -1,4 +1,5 @@
 package edu.lehigh.cse216.buzzboys.backend;
+import java.util.Date;
 /**
  * A ligher row representation of vote used when returning all rows
  */
@@ -26,6 +27,6 @@ public class VoteLite extends Row {
     public VoteLite(VoteLite data) {
         super(data.id, data.cDate);
         mId = data.mId;
-        username = data.mId;
+        username = data.username;
     }
 }

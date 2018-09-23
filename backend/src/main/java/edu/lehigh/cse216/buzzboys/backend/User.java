@@ -38,14 +38,14 @@ public class User extends UserLite {
     User(int uid, Date dateCreated, String first, String last, String user, String mail) {
         super(uid, dateCreated, first, last);
         email = mail;
-        username = name;
+        username = user;
     }
 
     /**
      * Copy constructor to create one User from another
      */
     User(User data) {
-        super(data.id, data.cDate, data.first, data.last);
+        super(data.id, data.cDate, data.ufirst, data.ulast);
         email = data.email;
         username = data.username;
     }

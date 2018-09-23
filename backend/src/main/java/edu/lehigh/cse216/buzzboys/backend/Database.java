@@ -12,6 +12,8 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.jetty.server.ConnectionLimit;
+
 import java.util.Date;
 
 public class Database {
@@ -63,7 +65,6 @@ public class Database {
      */
     //Messages
     private PreparedStatement mUpdateOneMessage;
-    private PreparedStatement mUpdateOneMessageTitle;
     private PreparedStatement mUpdateOneMessageUp;
     private PreparedStatement mUpdateOneMessageDown;
     
@@ -80,6 +81,7 @@ public class Database {
 
      //Messages
      private PreparedStatement mDeleteOneMessage;
+    
      //Users
      private PreparedStatement mDeleteOneUser;
 
@@ -135,47 +137,14 @@ public class Database {
 
         if(db == null)
             db = new Database();
-/*
-        //Give the Database object a connection, fail if we cannot get one
-        try {
-            Class.forName("org.postgresql.Driver");
-            URI dbUri = new URI(db_url);
-            String username = dbUri.getUserInfo().split(":")[0];
-            db.globalUsername = username;//added to be able to use username
-            String password = dbUri.getUserInfo().split(":")[1];
-            String dbUrl = "jdbc:postgresql://" + dbUri.getHost() + ':' + dbUri.getPort() + dbUri.getPath();
-            Connection conn = DriverManager.getConnection(dbUrl, username, password);
-            if (conn == null) {
-                System.err.println("Error: DriverManager.getConnection() returned a null object");
-                return null;
-            }
-            db.mConnection = conn;
-        } catch (SQLException e) {
-            System.err.println("Error: DriverManager.getConnection() threw a SQLException");
-            e.printStackTrace();
-            return null;
-        } catch (ClassNotFoundException cnfe) {
-            System.out.println("Unable to find postgresql driver");
-            return null;
-        } catch (URISyntaxException s) {
-            System.out.println("URI Syntax Error");
-            return null;
-        }
-*/
-        // Give the Database object a connection, fail if we cannot get one
-        try {
-            Connection conn = DriverManager.getConnection("jdbc:postgresql://" + ip + ":" + port + "/", user, pass);
-            if (conn == null) {
-                System.err.println("Error: DriverManager.getConnection() returned a null object");
-                return null;
-            }
-            db.mConnection = conn;
-        } catch (SQLException e) {
-            System.err.println("Error: DriverManager.getConnection() threw a SQLException");
-            e.printStackTrace();
-            return null;
-        }
+        
+        connect(db);
 
+        if(db.mConnection == null) {
+            System.out.println("Establishing connection failed...");
+            System.exit(1);
+        }
+        
         // Attempt to create all of our prepared statements.  If any of these 
         // fail, the whole getDatabase() call should fail
         try {
@@ -207,8 +176,7 @@ public class Database {
             db.mSelectAllFromUsers = db.mConnection.prepareStatement("SELECT id, username, firstname, lastname, email FROM users");//added
             db.mSelectOneMessage = db.mConnection.prepareStatement("SELECT * from messages WHERE id = ?");
             db.mSelectOneUser = db.mConnection.prepareStatement("SELECT * from users WHERE id = ?");
-            db.mUpdateOneMessage = db.mConnection.prepareStatement("UPDATE messages SET message = ?, lastUpdated = ? WHERE id = ?");
-            db.mUpdateOneMessageTitle = db.mConnection.prepareStatement("UPDATE messages set title = ? lastUpdated = ? WHERE id = ?");
+            db.mUpdateOneMessage = db.mConnection.prepareStatement("UPDATE messages SET title = ? message = ?, lastUpdated = ? WHERE id = ?");
             //Add functionality to update one field each
             db.mUpdateOneUser = db.mConnection.prepareStatement("UPDATE users SET username = ?, firstname = ?, lastname = ?, email = ? WHERE id = ?");
             db.mUpdateOneMessageUp = db.mConnection.prepareStatement("UPDATE messages SET upvotes = ? WHERE id = ?");
@@ -228,6 +196,38 @@ public class Database {
             return null;
         }
         return db;
+    }
+
+    /**
+     * adds a connection to a database object
+     * @param db
+     * @return
+     */
+    void connect(Database db) {
+        //Give the Database object a connection, fail if we cannot get one
+        String db_url = "postgres://bqmyghussmyoch:0b4491be62bc014a18f2f4c7795067a7e1c898b2bf20102729254cbdf748f9cf@ec2-54-83-27-165.compute-1.amazonaws.com:5432/d27ergo5pr6bta";
+        try {
+            Class.forName("org.postgresql.Driver");
+            URI dbUri = new URI(db_url);
+            String username = dbUri.getUserInfo().split(":")[0];
+            db.globalUsername = username;//added to be able to use username
+            String password = dbUri.getUserInfo().split(":")[1];
+            String dbUrl = "jdbc:postgresql://" + dbUri.getHost() + ':' + dbUri.getPort() + dbUri.getPath();
+            Connection conn = DriverManager.getConnection(dbUrl, username, password);
+            if (conn == null) {
+                System.err.println("Error: DriverManager.getConnection() returned a null object");
+                return;
+            }
+            db.mConnection = conn;
+        } catch (SQLException e) {
+            System.err.println("Error: DriverManager.getConnection() threw a SQLException");
+            e.printStackTrace();
+            return null;
+        } catch (ClassNotFoundException cnfe) {
+            System.out.println("Unable to find postgresql driver");
+        } catch (URISyntaxException s) {
+            System.out.println("URI Syntax Error");
+        }
     }
 
     /**
@@ -423,26 +423,14 @@ public class Database {
      * 
      * @return The number of rows that were updated.  -1 indicates an error.
      */
-    int updateOneMessage(int id, String message) {
+    int updateOneMessage(int id, String title, String message) {
         int res = -1;
         try {
-            mUpdateOneMessage.setString(1, message);
+            mUpdateOneMessage.setString(1, title);
+            mUpdateOneMessage.setString(2, message);
             mUpdateOneMessage.setTimestamp(2, new Timestamp(new Date().getTime()));
             mUpdateOneMessage.setInt(3, id);
             res = mUpdateOneMessage.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return res;
-    }
-    
-    int updateOneMessageTitle(int id, String title) {
-        int res = -1;
-        try {
-            mUpdateOneMessageTitle.setString(1, title);
-            mUpdateOneMessageTitle.setTimestamp(2, new Timestamp(new Date().getTime()));
-            mupdateOneMessageTitle.setInt(3, id);
-            res = mUpdateOneMessageTitle.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
