@@ -3,7 +3,6 @@ package edu.lehigh.cse216.buzzboys;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -26,6 +25,13 @@ import java.util.ArrayList;
 
 import edu.lehigh.cse216.buzzboys.Data.Message;
 
+/**
+ * Main Activity / Landing page for the user. Displays all messages
+ * TODO Make view/ui template for messages: subject, message, upvote count, and buttons for upvoting or downvoting
+ * TODO indicate whether a user upvoted/downvoted the message
+ * TODO If the user tries to upvote when they aren't logged in, start LoginActivity
+ *
+ */
 public class MainActivity extends AppCompatActivity {
 
     ArrayList<Message> messages = new ArrayList<>();
@@ -59,8 +65,8 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent i = new Intent(getApplicationContext(), CreateMessage.class);
-                i.putExtra("User", "CSE216 is the best");
+                Intent i = new Intent(getApplicationContext(), CreateMessageActivity.class);
+                //i.putExtra("User", "CSE216 is the best");
                 startActivityForResult(i, 789); // 789 is the number that will come back to us
             }
         });
@@ -98,7 +104,10 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.login_form) {
+            Intent i = new Intent(getApplicationContext(), LoginActivity.class);
+            //i.putExtra("label_contents", "CSE216 is the best");
+            startActivityForResult(i, 789); // 789 is the number that will come back to us
             return true;
         }
 

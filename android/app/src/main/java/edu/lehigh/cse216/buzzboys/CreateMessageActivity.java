@@ -12,7 +12,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-public class CreateMessage extends AppCompatActivity {
+/**
+ * A screen for creating and posting a message
+ * TODO in onCreate, if the user isn't logged in, start the login activity
+ */
+public class CreateMessageActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
