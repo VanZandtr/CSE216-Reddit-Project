@@ -6,13 +6,17 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
 
+import edu.lehigh.cse216.buzzboys.Data.Message;
+
 /**
  * Responsible for communicating with Heroku.
+ * TODO: Find a better name for VolleySingleton
+ * TODO: Methods for getting basic data
  * TODO: Enable testing functionality; ie be able to return some data without an internet connection
  */
 public class VolleySingleton {
 
-    
+    public final static boolean OFFLINE = true;
 
     private final static String baseUrl = "postgres://bqmyghussmyoch:0b4491be62bc014a18f2f4c7795067a7e1c898b2bf20102729254cbdf748f9cf@ec2-54-83-27-165.compute-1.amazonaws.com:5432/d27ergo5pr6bta";
     public final static String usersUrl = baseUrl + "/users";

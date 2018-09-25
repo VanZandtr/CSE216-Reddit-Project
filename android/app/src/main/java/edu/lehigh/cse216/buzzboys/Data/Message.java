@@ -36,4 +36,9 @@ public class Message {
         m = new Message(id, uid, sub, mes, up, down);
         return m;
     }
+
+    public static Message[] TestMessages = new Message[] {
+            new Message(0, 0, "Subject1", "Message1", 1, 0),
+            new Message(1, 0, "Subject2", "Message2", 0, 1)
+    };
 }

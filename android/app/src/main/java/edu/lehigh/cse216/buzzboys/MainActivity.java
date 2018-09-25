@@ -43,24 +43,32 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        VolleySingleton volleySingleton = VolleySingleton.getInstance(this);
+        RecyclerView rv = (RecyclerView) findViewById(R.id.message_list_view);
+        rv.setLayoutManager(new LinearLayoutManager(this));
+        ItemListAdapter adapter = new ItemListAdapter(this, messages);
+        rv.setAdapter(adapter);
 
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, VolleySingleton.usersUrl,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        getMessages(response);
+        if (VolleySingleton.OFFLINE)
+            for (Message m : Message.TestMessages)
+                messages.add(m);
+        else {
+            VolleySingleton volleySingleton = VolleySingleton.getInstance(this);
+            StringRequest stringRequest = new StringRequest(Request.Method.GET, VolleySingleton.usersUrl,
+                    new Response.Listener<String>() {
+                        @Override
+                        public void onResponse(String response) {
+                            getMessages(response);
+                        }
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            Log.d("TheBuzz", "Error getting messages from server");
+                        }
                     }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.d("TheBuzz", "Error getting messages from server");
-                    }
-                }
-        );
-        volleySingleton.addRequest(stringRequest);
-
+            );
+            volleySingleton.addRequest(stringRequest);
+        }
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -83,10 +91,6 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         Log.d("TheBuzz", "Successfully parsed Messages");
-        RecyclerView rv = (RecyclerView) findViewById(R.id.message_list_view);
-        rv.setLayoutManager(new LinearLayoutManager(this));
-        ItemListAdapter adapter = new ItemListAdapter(this, messages);
-        rv.setAdapter(adapter);
     }
 
     @Override

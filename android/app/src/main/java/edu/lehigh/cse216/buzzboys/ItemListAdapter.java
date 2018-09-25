@@ -49,7 +49,7 @@ class ItemListAdapter extends RecyclerView.Adapter<ItemListAdapter.ViewHolder> {
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         Message m = messages.get(position);
-        holder.index.setText(Integer.toString(m.ID));
+        holder.index.setText(m.subject);
         holder.text.setText(m.message);
     }
 }
