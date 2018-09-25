@@ -227,6 +227,8 @@ public class App {
                 if (subject.equals("") || message.equals("") || username == null)
                     continue;
                 int res = db.insertMessageRow(subject, message, username, upvotes, downvotes);//added
+                if(res == -1)
+                    continue;
                 System.out.println(res + " rows added");
             } else if (action == '8') { //Insert new user
                 String username = db.globalUsername;//added
@@ -364,7 +366,7 @@ public class App {
                         System.out.println("Insert an upvote");
                         upvotes +=1;
                     }
-                                        
+
                     int res = db.updateOneMessageUp(id, upvotes);//reflect the change in upvotes
                     if (res == -1)
                         continue;

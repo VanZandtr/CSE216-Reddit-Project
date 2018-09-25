@@ -6,6 +6,12 @@ import edu.lehigh.cse216.buzzboys.admin.Database.VoteRowData;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Map;
+
 
 /**
  * Unit test for simple App.
@@ -31,7 +37,7 @@ public class DataBaseTest extends TestCase {
      * Ensure that the constructor populates every field of the object it
      * creates
      */
-    public void testDataBaseConstructor() {
+    public Database testDataBaseConstructor() {
         //  User(String username, String firstname, String lastname, String email)
         String ip = "127.0.0.1";
     
@@ -40,6 +46,9 @@ public class DataBaseTest extends TestCase {
         String pass = "Safari_3989";
 
         Database db = Database.getDatabase(ip, port, user, pass);
+        assertTrue(db != null);
+
+        return db;
 
     }
 
@@ -59,8 +68,8 @@ public class DataBaseTest extends TestCase {
         assertTrue(messageTest.mUpvotes == upvotes);
         assertTrue(messageTest.mDownvotes == downvotes);
         assertTrue(messageTest.mId == id);
-
     }
+    
 
     public void testUserRowConstructor() {
         String username = "Test User";
@@ -76,7 +85,6 @@ public class DataBaseTest extends TestCase {
         assertTrue(userTest.mUsername.equals(username));
         assertTrue(userTest.mEmail.equals(email));
         assertTrue(userTest.mId == id);
-
     }
 
     public void testVoteRowConstructor() {
@@ -91,7 +99,58 @@ public class DataBaseTest extends TestCase {
         assertTrue(voteTest.mId == id);
         assertTrue(voteTest.mMessage_Id == message_id);
         assertTrue(voteTest.mIs_upvote == is_upvote);
-
-
     }
+
+    /*
+    public void testMessage() {
+        String username = "Test User";
+        String subject = "Test";
+        String message = "This is a Test";
+        int upvotes = 0;
+        int downvotes = 0;
+        int id = 1;
+
+        Database db = testDataBaseConstructor();
+
+        //test insert method
+        int mess = db.insertMessageRow(subject, message, username, upvotes, downvotes);
+        assertTrue(mess != -1);
+
+        //test select method
+        Database.MessageRowData getMess = db.selectOneMessage(mess);
+        if(getMess == null){
+            System.out.println("getMess is null");
+        }        
+        assertTrue(getMess.mMessage.equals(message));
+        assertTrue(getMess.mSubject.equals(subject));
+        assertTrue(getMess.mUsername.equals(username));
+        assertTrue(getMess.mUpvotes == downvotes);
+        assertTrue(getMess.mDownvotes == upvotes);
+    }
+
+    public void testUser() {
+        String username = "Test User";
+        String firstname = "Test Firstname";
+        String lastname = "Test Lastname";
+        String email = "Test Email";
+        int id = 1;
+
+
+        Database db = testDataBaseConstructor();
+
+        //test insert method
+        int user = db.insertUserRow(username, firstname, lastname, email);
+        assertTrue(user != -1);
+
+        //test select method
+        Database.UserRowData getUser = db.selectOneUser(user);
+        if(getUser == null){
+            System.out.println("getUser is null");
+        }
+        assertTrue(getUser.mFirstname.equals(firstname));
+        assertTrue(getUser.mLastName.equals(lastname));
+        assertTrue(getUser.mUsername.equals(username));
+        assertTrue(getUser.mEmail.equals(email));
+    }
+    */
 }
