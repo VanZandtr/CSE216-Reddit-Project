@@ -19,11 +19,13 @@ class ItemListAdapter extends RecyclerView.Adapter<ItemListAdapter.ViewHolder> {
     class ViewHolder extends RecyclerView.ViewHolder {
         TextView index;
         TextView text;
+        TextView upvoteCount;
 
         ViewHolder(View itemView) {
             super(itemView);
             this.index = (TextView) itemView.findViewById(R.id.listItemIndex);
             this.text = (TextView) itemView.findViewById(R.id.listItemText);
+            this.upvoteCount = (TextView) itemView.findViewById(R.id.listItemUpvoteCount);
         }
     }
 
@@ -51,5 +53,6 @@ class ItemListAdapter extends RecyclerView.Adapter<ItemListAdapter.ViewHolder> {
         Message m = messages.get(position);
         holder.index.setText(m.subject);
         holder.text.setText(m.message);
+        holder.upvoteCount.setText(Integer.toString(m.upvotes - m.downvotes));
     }
 }

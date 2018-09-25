@@ -17,4 +17,6 @@
         completions."
     </string>
     <string name="action_sign_in_cancel">Cancel</string>
+    <string name="upvote">Upvote</string>
+    <string name="downvote">Downvote</string>
 </resources>

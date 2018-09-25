@@ -9,10 +9,12 @@
         android:orientation="vertical">
         <Button
             android:id="@+id/message_upvote"
+            android:text="@string/upvote"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
         <Button
             android:id="@+id/message_downvote"
+            android:text="@string/downvote"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
     </LinearLayout>
@@ -37,4 +39,9 @@
             android:fontFamily="casual"
             android:text="" />
     </LinearLayout>
+    <TextView
+        android:id="@+id/listItemUpvoteCount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""/>
 </LinearLayout>

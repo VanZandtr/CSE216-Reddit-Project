@@ -42,7 +42,7 @@ import static android.Manifest.permission.READ_CONTACTS;
  *    Query the db to see if the user exists,
  *    If it doesn't, create it
  *    Set currentUser = that user
- * TODO if the user is logged in, sign them out (also make the toolbar say "Sign-out" instead of login
+ * TODO if the user is logged in, sign them out (also make the toolbar say "Sign-out" instead of login)
  */
 public class LoginActivity extends AppCompatActivity  {
 
