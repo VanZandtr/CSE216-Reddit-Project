@@ -27,7 +27,6 @@ import edu.lehigh.cse216.buzzboys.Data.Message;
 
 /**
  * Main Activity / Landing page for the user. Displays all messages
- * TODO Make view/ui template for messages: subject, message, upvote count, and buttons for upvoting or downvoting
  * TODO indicate whether a user upvoted/downvoted the message
  * TODO If the user tries to upvote when they aren't logged in, start LoginActivity
  *

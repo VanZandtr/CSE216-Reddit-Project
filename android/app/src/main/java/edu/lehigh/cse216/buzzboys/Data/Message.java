@@ -14,6 +14,11 @@ public class Message {
     public int upvotes;
     public int downvotes;
 
+    //-1 = Current User downvoted
+    // 0 = Current User did not vote on this item
+    // 1 = Current User upvoted
+    public int upvoted;
+
     public Message(int i, int ui, String sub, String mes, int up, int down) {
         ID = i;
         userID = ui;

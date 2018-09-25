@@ -12,6 +12,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import edu.lehigh.cse216.buzzboys.Data.User;
+
 /**
  * A screen for creating and posting a message
  * TODO in onCreate, if the user isn't logged in, start the login activity
@@ -29,6 +31,13 @@ public class CreateMessageActivity extends AppCompatActivity {
         TextView tv = (TextView) findViewById(R.id.specialMessage);
         tv.setText(label_contents);
 
+        //If we're not logged in, make the user log in
+        if (User.currentUser == null) {
+            Intent i = new Intent(getApplicationContext(), CreateMessageActivity.class);
+            //i.putExtra("User", "CSE216 is the best");
+            startActivityForResult(i, 789); // 789 is the number that will come back to us
+
+        }
         // The OK button gets the text from the input box and returns it to the calling activity
         final EditText et = (EditText) findViewById(R.id.editText);
         Button bOk = (Button) findViewById(R.id.buttonOk);
