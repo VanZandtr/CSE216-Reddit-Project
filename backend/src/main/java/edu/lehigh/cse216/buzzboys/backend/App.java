@@ -281,12 +281,11 @@ public class App {
 
         Spark.put("/messages/:id/upvote", (request, response) -> {
             int idx = Integer.parseInt(request.params("id"));
-            int upvotes = Integer.parseInt(request.params("upvotes"));
             // ensure status 200 OK, with a MIME type of JSON
             response.status(200);
             response.type("application/json");
             
-            Boolean data = store.msg.updateUpvote(idx, upvotes);
+            Boolean data = store.msg.updateUpvote(idx);
             //you need to add the votes table functionality, queries with joins need to be made and methods implemented
             if (!data) {
                 return gson.toJson(new StructuredResponse("error", idx + "not found or updated failed", null));
@@ -297,12 +296,11 @@ public class App {
 
         Spark.put("/messages/:id/downvote", (request, response) -> {
             int idx = Integer.parseInt(request.params("id"));
-            int downvotes = Integer.parseInt(request.params("downvotes"));
             // ensure status 200 OK, with a MIME type of JSON
             response.status(200);
             response.type("application/json");
             
-            boolean data = store.msg.updateDownvote(idx, downvotes);
+            boolean data = store.msg.updateDownvote(idx);
             //you need to add the votes table functionality, queries with joins need to be made and methods implemented
             if (!data) {
                 return gson.toJson(new StructuredResponse("error", idx + " not found or update failed", null));

@@ -437,10 +437,10 @@ public class Database {
         return res;
     }
 
-    int updateOneMessageUp(int id, int upvotes) {
+    int updateOneMessageUp(int id) {
         int res = -1;
         try {
-            mUpdateOneMessageUp.setInt(1, upvotes);
+            mUpdateOneMessageUp.setInt(1, getUpvotes(id)+1);
             mUpdateOneMessageUp.setInt(2, id);
             res = mUpdateOneMessageUp.executeUpdate();
         } catch (SQLException e) {
@@ -449,10 +449,10 @@ public class Database {
         return res;
     }
 
-    int updateOneMessageDown(int id, int downvotes) {
+    int updateOneMessageDown(int id) {
         int res = -1;
         try {
-            mUpdateOneMessageDown.setInt(1, downvotes);
+            mUpdateOneMessageDown.setInt(1, getDownvotes(id)+1);
             mUpdateOneMessageDown.setInt(2, id);
             res = mUpdateOneMessageDown.executeUpdate();
         } catch (SQLException e) {

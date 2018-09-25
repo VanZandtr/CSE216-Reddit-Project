@@ -95,8 +95,8 @@ public class MessageStore extends DataStore<MessageLite, Message> {
      * @param upvotes
      * @return
      */
-    public synchronized boolean updateUpvote(int id, int upvotes) {
-        return (readOne(id) == null) ? false : (db.updateOneMessageUp(id, upvotes) == -1) ? false : true;
+    public synchronized boolean updateUpvote(int id) {
+        return (readOne(id) == null) ? false : (db.updateOneMessageUp(id) == -1) ? false : true;
     }
 
     /**
@@ -105,8 +105,8 @@ public class MessageStore extends DataStore<MessageLite, Message> {
      * @param downvotes
      * @return
      */
-    public synchronized boolean updateDownvote(int id, int downvotes) {
-        return (readOne(id) == null) ? false : (db.updateOneMessageDown(id, downvotes) == -1) ? false : true;
+    public synchronized boolean updateDownvote(int id) {
+        return (readOne(id) == null) ? false : (db.updateOneMessageDown(id) == -1) ? false : true;
     }
 
     /**
