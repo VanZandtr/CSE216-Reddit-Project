@@ -72,11 +72,20 @@ public class LoginActivity extends AppCompatActivity  {
 //            }
 //        });
 
+        Button bSubmit = (Button) findViewById(R.id.email_sign_in_button);
+        bSubmit.setOnClickListener( new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //TODO finish login activity
+            }
+        });
+
         // The Cancel button returns to the caller without sending any data
         Button bCancel = (Button) findViewById(R.id.sign_in_cancel_button);
         bCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 setResult(Activity.RESULT_CANCELED);
                 finish();
             }

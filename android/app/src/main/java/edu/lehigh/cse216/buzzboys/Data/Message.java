@@ -28,22 +28,22 @@ public class Message {
         downvotes = down;
     }
 
-    public static Message getMessageFromJSON(JSONObject json) throws JSONException {
+    public static Message getFromJSON(JSONObject json) throws JSONException {
         Message m = null;
 
-        int id = json.getInt("ID");
-        int uid = json.getInt("user_id");
-        String sub = json.getString("subject");
-        String mes = json.getString("message");
-        int up = json.getInt("upvotes");
-        int down = json.getInt("downvotes");
+        int id = json.getInt("id");
+        String uid = json.getString("userId");
+        String sub = json.getString("mTitle");
+        //String mes = json.getString("message");
+        //int up = json.getInt("upvotes");
+        //int down = json.getInt("downvotes");
 
-        m = new Message(id, uid, sub, mes, up, down);
+        m = new Message(id, Integer.getInteger(uid), sub, "", 0, 0);
         return m;
     }
 
     public static Message[] TestMessages = new Message[] {
-            new Message(0, 0, "Subject1", "Message1", 1, 0),
-            new Message(1, 0, "Subject2", "Message2", 0, 1)
+            new Message(0, 0, "Title1", "Message1", 1, 0),
+            new Message(1, 0, "Title2", "Message2", 0, 1)
     };
 }

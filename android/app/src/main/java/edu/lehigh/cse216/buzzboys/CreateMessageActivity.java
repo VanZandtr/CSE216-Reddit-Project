@@ -7,6 +7,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -16,7 +17,7 @@ import edu.lehigh.cse216.buzzboys.Data.User;
 
 /**
  * A screen for creating and posting a message
- * TODO in onCreate, if the user isn't logged in, start the login activity
+ * TODO Logic for updating
  */
 public class CreateMessageActivity extends AppCompatActivity {
 
@@ -33,8 +34,8 @@ public class CreateMessageActivity extends AppCompatActivity {
 
         //If we're not logged in, make the user log in
         if (User.currentUser == null) {
-            Intent i = new Intent(getApplicationContext(), CreateMessageActivity.class);
-            //i.putExtra("User", "CSE216 is the best");
+            Intent i = new Intent(getApplicationContext(), LoginActivity.class);
+            i.putExtra("From", "CreateMessage");
             startActivityForResult(i, 789); // 789 is the number that will come back to us
 
         }
@@ -62,6 +63,18 @@ public class CreateMessageActivity extends AppCompatActivity {
                 finish();
             }
         });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        //If the LoginActivity was cancelled, this activity should cancel too. Send the user back
+        //to the main screen
+        if(resultCode == RESULT_CANCELED){
+            setResult(Activity.RESULT_CANCELED);
+            finish();
+        }
+
     }
 
 }

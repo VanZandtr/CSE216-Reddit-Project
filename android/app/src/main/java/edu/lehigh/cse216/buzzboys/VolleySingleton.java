@@ -18,7 +18,7 @@ public class VolleySingleton {
 
     public final static boolean OFFLINE = true;
 
-    private final static String baseUrl = "postgres://bqmyghussmyoch:0b4491be62bc014a18f2f4c7795067a7e1c898b2bf20102729254cbdf748f9cf@ec2-54-83-27-165.compute-1.amazonaws.com:5432/d27ergo5pr6bta";
+    private final static String baseUrl = "https://buzzboys.herokuapp.com";
     public final static String usersUrl = baseUrl + "/users";
     public final static String messagesUrl = baseUrl + "/messages";
     public final static String userUrl = baseUrl + "/user/%d"; //insert user id

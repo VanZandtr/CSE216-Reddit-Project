@@ -20,6 +20,7 @@ import com.android.volley.toolbox.StringRequest;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 
@@ -52,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
                 messages.add(m);
         else {
             VolleySingleton volleySingleton = VolleySingleton.getInstance(this);
-            StringRequest stringRequest = new StringRequest(Request.Method.GET, VolleySingleton.usersUrl,
+            StringRequest stringRequest = new StringRequest(Request.Method.GET, VolleySingleton.messagesUrl,
                     new Response.Listener<String>() {
                         @Override
                         public void onResponse(String response) {
@@ -73,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent i = new Intent(getApplicationContext(), CreateMessageActivity.class);
-                //i.putExtra("User", "CSE216 is the best");
+                i.putExtra("From", "MainActivity");
                 startActivityForResult(i, 789); // 789 is the number that will come back to us
             }
         });
@@ -81,9 +82,10 @@ public class MainActivity extends AppCompatActivity {
 
     private void getMessages(String response) {
         try {
-            JSONArray jsonArray= new JSONArray(response);
+            JSONObject obj = new JSONObject(response);
+            JSONArray jsonArray= obj.getJSONArray("mData");
             for (int i = 0; i < jsonArray.length(); ++i) {
-                messages.add(Message.getMessageFromJSON(jsonArray.getJSONObject(i)));
+                messages.add(Message.getFromJSON(jsonArray.getJSONObject(i)));
             }
         } catch (final JSONException e) {
             Log.d("TheBuzz", "Error parsing JSON message:" + e.getMessage());

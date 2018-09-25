@@ -2,11 +2,19 @@ package edu.lehigh.cse216.buzzboys;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
 
 import org.w3c.dom.Text;
 
@@ -20,13 +28,70 @@ class ItemListAdapter extends RecyclerView.Adapter<ItemListAdapter.ViewHolder> {
         TextView index;
         TextView text;
         TextView upvoteCount;
+        Button upvote;
+        Button downvote;
 
-        ViewHolder(View itemView) {
+        ViewHolder(final View itemView) {
             super(itemView);
             this.index = (TextView) itemView.findViewById(R.id.listItemIndex);
             this.text = (TextView) itemView.findViewById(R.id.listItemText);
             this.upvoteCount = (TextView) itemView.findViewById(R.id.listItemUpvoteCount);
+            upvote = (Button) itemView.findViewById(R.id.message_upvote);
+            downvote = (Button) itemView.findViewById(R.id.message_downvote);
+
+
+            View.OnClickListener upListener = new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    VolleySingleton volleySingleton = VolleySingleton.getInstance(itemView.getContext());
+                    StringRequest stringRequest = new StringRequest(Request.Method.GET, VolleySingleton.messageUpvoteUrl,
+                            new Response.Listener<String>() {
+                                @Override
+                                public void onResponse(String response) {
+                                    Toast.makeText(itemView.getContext(), response,Toast.LENGTH_SHORT).show();
+                                }
+                            },
+                            new Response.ErrorListener() {
+                                @Override
+                                public void onErrorResponse(VolleyError error) {
+                                    Log.d("TheBuzz", "Error getting messages from server");
+                                    Toast.makeText(itemView.getContext(), error.toString(), Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                    );
+                    volleySingleton.addRequest(stringRequest);
+                }
+            };
+
+            upvote.setOnClickListener(upListener);
+
+            View.OnClickListener downListener = new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    VolleySingleton volleySingleton = VolleySingleton.getInstance(itemView.getContext());
+                    StringRequest stringRequest = new StringRequest(Request.Method.GET, VolleySingleton.messageDownvoteUrl,
+                            new Response.Listener<String>() {
+                                @Override
+                                public void onResponse(String response) {
+                                    Toast.makeText(itemView.getContext(), response,Toast.LENGTH_SHORT).show();
+                                }
+                            },
+                            new Response.ErrorListener() {
+                                @Override
+                                public void onErrorResponse(VolleyError error) {
+                                    Log.d("TheBuzz", "Error getting messages from server");
+                                    Toast.makeText(itemView.getContext(), error.toString(), Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                    );
+                    volleySingleton.addRequest(stringRequest);
+                }
+            };
+
+            downvote.setOnClickListener(downListener);
         }
+
+
     }
 
     private ArrayList<Message> messages;
