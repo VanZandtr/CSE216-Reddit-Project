@@ -25,6 +25,7 @@ public class UserStore extends DataStore<UserLite, User> {
      * @return
      */
     public synchronized int createEntry(String first, String last, String user, String mail) {
+        System.out.println(first + last + user + mail);
         if(first == null || last == null || user == null)
             return -1;
         return (db.insertUserRow(user, first, last, mail) == -1) ? -1 : counter++;
@@ -59,6 +60,7 @@ public class UserStore extends DataStore<UserLite, User> {
      * @return
      */
     public synchronized User updateOne(int id, String username, String firstname, String lastname, String email) {
+        System.out.println(id + username + firstname + lastname + email);
         if(readOne(id) == null || username == null || firstname == null || lastname == null)
             return null;
         return (db.updateOneUser(id, username, firstname, lastname, email) == -1) ? null : new User(db.selectOneUser(id));

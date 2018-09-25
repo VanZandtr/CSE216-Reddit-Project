@@ -226,11 +226,11 @@ public class App {
             // a status 500
             
             int idx = Integer.parseInt(request.params("id"));
-            User req = gson.fromJson(request.body(), User.class);
+            UserReq req = gson.fromJson(request.body(), UserReq.class);
             // ensure status 200 OK, with a MIME type of JSON
             response.status(200);
             response.type("application/json");
-            User result = store.user.updateOne(idx, req.username, req.ufirst, req.ulast, req.email);
+            User result = store.user.updateOne(idx, req.username, req.first, req.last, req.email);
             if (result == null) {
                 return gson.toJson(new StructuredResponse("error", "unable to update row " + idx, null));
             } else {
