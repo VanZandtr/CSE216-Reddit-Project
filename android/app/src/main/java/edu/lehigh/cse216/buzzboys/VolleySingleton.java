@@ -16,7 +16,7 @@ import edu.lehigh.cse216.buzzboys.Data.Message;
  */
 public class VolleySingleton {
 
-    public final static boolean OFFLINE = true;
+    public final static boolean OFFLINE = false;
 
     private final static String baseUrl = "https://buzzboys.herokuapp.com";
     public final static String usersUrl = baseUrl + "/users";

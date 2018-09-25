@@ -30,6 +30,7 @@ class ItemListAdapter extends RecyclerView.Adapter<ItemListAdapter.ViewHolder> {
         TextView upvoteCount;
         Button upvote;
         Button downvote;
+        int messageId = -1;
 
         ViewHolder(final View itemView) {
             super(itemView);
@@ -44,7 +45,8 @@ class ItemListAdapter extends RecyclerView.Adapter<ItemListAdapter.ViewHolder> {
                 @Override
                 public void onClick(View view) {
                     VolleySingleton volleySingleton = VolleySingleton.getInstance(itemView.getContext());
-                    StringRequest stringRequest = new StringRequest(Request.Method.GET, VolleySingleton.messageUpvoteUrl,
+                    String fullUrl = String.format(VolleySingleton.messageUpvoteUrl, messageId);
+                    StringRequest stringRequest = new StringRequest(Request.Method.PUT, fullUrl,
                             new Response.Listener<String>() {
                                 @Override
                                 public void onResponse(String response) {
@@ -54,7 +56,7 @@ class ItemListAdapter extends RecyclerView.Adapter<ItemListAdapter.ViewHolder> {
                             new Response.ErrorListener() {
                                 @Override
                                 public void onErrorResponse(VolleyError error) {
-                                    Log.d("TheBuzz", "Error getting messages from server");
+                                    Log.d("TheBuzz", "Error upvoting");
                                     Toast.makeText(itemView.getContext(), error.toString(), Toast.LENGTH_SHORT).show();
                                 }
                             }
@@ -69,7 +71,7 @@ class ItemListAdapter extends RecyclerView.Adapter<ItemListAdapter.ViewHolder> {
                 @Override
                 public void onClick(View view) {
                     VolleySingleton volleySingleton = VolleySingleton.getInstance(itemView.getContext());
-                    StringRequest stringRequest = new StringRequest(Request.Method.GET, VolleySingleton.messageDownvoteUrl,
+                    StringRequest stringRequest = new StringRequest(Request.Method.PUT, String.format(VolleySingleton.messageDownvoteUrl, messageId),
                             new Response.Listener<String>() {
                                 @Override
                                 public void onResponse(String response) {
@@ -79,7 +81,7 @@ class ItemListAdapter extends RecyclerView.Adapter<ItemListAdapter.ViewHolder> {
                             new Response.ErrorListener() {
                                 @Override
                                 public void onErrorResponse(VolleyError error) {
-                                    Log.d("TheBuzz", "Error getting messages from server");
+                                    Log.d("TheBuzz", "Error downvoting");
                                     Toast.makeText(itemView.getContext(), error.toString(), Toast.LENGTH_SHORT).show();
                                 }
                             }
@@ -119,5 +121,6 @@ class ItemListAdapter extends RecyclerView.Adapter<ItemListAdapter.ViewHolder> {
         holder.index.setText(m.subject);
         holder.text.setText(m.message);
         holder.upvoteCount.setText(Integer.toString(m.upvotes - m.downvotes));
+        holder.messageId = m.ID;
     }
 }

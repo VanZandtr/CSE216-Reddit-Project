@@ -6,9 +6,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Date;
+
 public class Message {
     public int ID;
     public int userID;
+    public String userName;
     public String subject;
     public String message;
     public int upvotes;
@@ -28,6 +31,17 @@ public class Message {
         downvotes = down;
     }
 
+    public Message(int mid, String uid, String sub, Date d) {
+        subject = sub;
+        userName = uid;
+        ID = mid;
+    }
+
+    public Message(String sub, String mes) {
+        subject = sub;
+        message = mes;
+    }
+
     public static Message getFromJSON(JSONObject json) throws JSONException {
         Message m = null;
 
@@ -38,7 +52,7 @@ public class Message {
         //int up = json.getInt("upvotes");
         //int down = json.getInt("downvotes");
 
-        m = new Message(id, Integer.getInteger(uid), sub, "", 0, 0);
+        m = new Message(id, uid, sub, null);
         return m;
     }
 

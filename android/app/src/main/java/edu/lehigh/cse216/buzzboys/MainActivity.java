@@ -44,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         RecyclerView rv = (RecyclerView) findViewById(R.id.message_list_view);
+
         rv.setLayoutManager(new LinearLayoutManager(this));
         ItemListAdapter adapter = new ItemListAdapter(this, messages);
         rv.setAdapter(adapter);
@@ -92,6 +93,8 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         Log.d("TheBuzz", "Successfully parsed Messages");
+        RecyclerView rv = (RecyclerView) findViewById(R.id.message_list_view);
+        rv.getAdapter().notifyDataSetChanged();
     }
 
     @Override
