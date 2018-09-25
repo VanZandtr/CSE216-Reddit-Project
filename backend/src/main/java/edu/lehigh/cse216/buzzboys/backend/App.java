@@ -21,6 +21,11 @@ import java.util.Map;
  */
 public class App {
     public static void main(String[] args) {
+
+        // Get the port on which to listen for requests
+        Spark.port(getIntFromEnv("PORT", 5432));
+
+
         //get system env variables to connect to postgres db
         // Map<String, String> env = System.getenv();
         // String ip = env.get("POSTGRES_IP");
@@ -297,5 +302,22 @@ public class App {
             }
         });
 
+    }
+
+    /**
+     * Get an integer environment varible if it exists, and otherwise return the
+     * default value.
+     * 
+     * @envar      The name of the environment variable to get.
+     * @defaultVal The integer value to use as the default if envar isn't found
+     * 
+     * @returns The best answer we could come up with for a value for envar
+     */
+    static int getIntFromEnv(String envar, int defaultVal) {
+        ProcessBuilder processBuilder = new ProcessBuilder();
+        if (processBuilder.environment().get(envar) != null) {
+            return Integer.parseInt(processBuilder.environment().get(envar));
+        }
+        return defaultVal;
     }
 }
