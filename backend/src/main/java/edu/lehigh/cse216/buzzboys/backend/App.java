@@ -49,18 +49,27 @@ public class App {
         //     with IDs starting over from 0.
         final StoreHandler store = new StoreHandler();
         
-        /*// Set up the location for serving static files
-        // Set up the location for serving static files.  If the STATIC_LOCATION
-        // environment variable is set, we will serve from it.  Otherwise, serve
-        // from "/web"
+        /**
+         * Set up the location for serving static files
+         * Set up the location for serving static files.  If the STATIC_LOCATION
+         * environment variable is set, we will serve from it.  Otherwise, serve
+         * from "/web"
+         */
         String static_location_override = System.getenv("STATIC_LOCATION");
         if (static_location_override == null) {
             Spark.staticFileLocation("/web");
         } else {
             Spark.staticFiles.externalLocation(static_location_override);
-        }*/
+        }
+
+        //create tables
+        // Database db = Database.getDatabase();
+        // db.createMessagesTable();
+        // db.createUsersTable();
+        // db.createVotesTable();
     
         // /messages
+        
 
         // GET route that returns all message titles and Ids.  All we do is get 
         // the data, embed it in a StructuredResponse, turn it into JSON, and 
@@ -81,7 +90,7 @@ public class App {
         Spark.post("/messages", (request, response) -> {
             // NB: if gson.Json fails, Spark will reply with status 500 Internal 
             // Server Error
-            Message req = gson.fromJson(request.body(), Message.class);
+            MessageReq req = gson.fromJson(request.body(), MessageReq.class);
             // ensure status 200 OK, with a MIME type of JSON
             // NB: even on error, we return 200, but with a JSON object that
             //     describes the error.
@@ -125,7 +134,7 @@ public class App {
             // a status 500
             
             int idx = Integer.parseInt(request.params("id"));
-            Message req = gson.fromJson(request.body(), Message.class);
+            MessageReq req = gson.fromJson(request.body(), MessageReq.class);
             // ensure status 200 OK, with a MIME type of JSON
             response.status(200);
             response.type("application/json");
@@ -174,14 +183,14 @@ public class App {
         Spark.post("/users", (request, response) -> {
             // NB: if gson.Json fails, Spark will reply with status 500 Internal 
             // Server Error
-            User req = gson.fromJson(request.body(), User.class);
+            UserReq req = gson.fromJson(request.body(), UserReq.class);
             // ensure status 200 OK, with a MIME type of JSON
             // NB: even on error, we return 200, but with a JSON object that
             //     describes the error.
             response.status(200);
             response.type("application/json");
             // NB: createEntry checks for null title and message
-            int newId = store.user.createEntry(req.ufirst, req.ulast, req.username, req.email);
+            int newId = store.user.createEntry(req.first, req.last, req.username, req.email);
             if (newId == -1) {
                 return gson.toJson(new StructuredResponse("error", "error performing insertion", null));
             } else {

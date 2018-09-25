@@ -172,8 +172,8 @@ public class Database {
             db.mInsertOneMessage = db.mConnection.prepareStatement("INSERT INTO messages VALUES (default, ?, ?, ?, ?, ?, ?, ?)");//added 2 ?'s'
             db.mInsertOneUser = db.mConnection.prepareStatement("INSERT INTO users VALUES (default, ?, ?, ?, ?, ?)");//added 2
             db.mInsertVote = db.mConnection.prepareStatement("INSERT INTO votes VALUES (default, ?, ?, ?, ?)");
-            db.mSelectAllFromMessages = db.mConnection.prepareStatement("SELECT id, subject, username, upvotes, downvotes FROM messages");//added
-            db.mSelectAllFromUsers = db.mConnection.prepareStatement("SELECT id, username, firstname, lastname, email FROM users");//added
+            db.mSelectAllFromMessages = db.mConnection.prepareStatement("SELECT * FROM messages");//added
+            db.mSelectAllFromUsers = db.mConnection.prepareStatement("SELECT * FROM users");//added
             db.mSelectOneMessage = db.mConnection.prepareStatement("SELECT * from messages WHERE id = ?");
             db.mSelectOneUser = db.mConnection.prepareStatement("SELECT * from users WHERE id = ?");
             db.mUpdateOneMessage = db.mConnection.prepareStatement("UPDATE messages SET title = ? message = ?, lastUpdated = ? WHERE id = ?");
@@ -182,7 +182,7 @@ public class Database {
             db.mUpdateOneMessageUp = db.mConnection.prepareStatement("UPDATE messages SET upvotes = ? WHERE id = ?");
             db.mUpdateOneMessageDown = db.mConnection.prepareStatement("UPDATE messages SET downvotes = ? WHERE id = ?");
             db.mSelectOneVote = db.mConnection.prepareStatement("SELECT * from votes WHERE id=?");
-            db.mSelectAllFromVotes= db.mConnection.prepareStatement("SELECT id, message_id, username, is_upvote FROM votes");//added
+            db.mSelectAllFromVotes= db.mConnection.prepareStatement("SELECT * FROM votes");//added
             db.mSelectVoteByMessageAndUsername = db.mConnection.prepareStatement("SELECT * from votes WHERE message_id = ? AND username = ?");
             db.mSelectVotesByMessageID = db.mConnection.prepareStatement("SELECT * from votes WHERE message_id = ?");
             db.mSelectVoteByUsername = db.mConnection.prepareStatement("SELECT * from votes WHERE username = ?");
@@ -205,7 +205,7 @@ public class Database {
      */
     static void connect(Database db) {
         //Give the Database object a connection, fail if we cannot get one
-        String db_url = "postgres://bqmyghussmyoch:0b4491be62bc014a18f2f4c7795067a7e1c898b2bf20102729254cbdf748f9cf@ec2-54-83-27-165.compute-1.amazonaws.com:5432/d27ergo5pr6bta";
+        String db_url = "postgres://bqmyghussmyoch:0b4491be62bc014a18f2f4c7795067a7e1c898b2bf20102729254cbdf748f9cf@ec2-54-83-27-165.compute-1.amazonaws.com:5432/d27ergo5pr6bta?sslmode=require";
         try {
             Class.forName("org.postgresql.Driver");
             URI dbUri = new URI(db_url);
@@ -313,7 +313,7 @@ public class Database {
             ResultSet rs = mSelectAllFromMessages.executeQuery();
             
             while (rs.next()) {
-                res.add(new MessageLite(rs.getInt("id"), rs.getDate("date_created"), rs.getString("user"), rs.getString("subject")));
+                res.add(new MessageLite(rs.getInt("id"), new Date(rs.getTimestamp("date_created").getTime()), rs.getString("username"), rs.getString("subject")));
             }
             rs.close();
             return res;
@@ -364,7 +364,7 @@ public class Database {
             mSelectOneMessage.setInt(1, id);
             ResultSet rs = mSelectOneMessage.executeQuery();
             if (rs.next()) {
-                res = new Message(rs.getInt("id"), rs.getDate("date_created"), rs.getString("subject"), rs.getString("message"), rs.getString("username"), rs.getInt("upvotes"), rs.getInt("downvotes"), rs.getDate("last_updated"));//added
+                res = new Message(rs.getInt("id"), rs.getTimestamp("date_created"), rs.getString("username"), rs.getString("subject"), rs.getString("message"), rs.getInt("upvotes"), rs.getInt("downvotes"), rs.getTimestamp("last_updated"));//added
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -378,7 +378,7 @@ public class Database {
             mSelectOneUser.setInt(1, id);
             ResultSet rs = mSelectOneUser.executeQuery();
             if (rs.next()) {
-                res = new User(rs.getInt("id"), rs.getDate("date_created"), rs.getString("firstname"), rs.getString("lastname"), rs.getString("username"), rs.getString("email"));
+                res = new User(rs.getInt("id"), new Date(rs.getTimestamp("date_created").getTime()), rs.getString("firstname"), rs.getString("lastname"), rs.getString("username"), rs.getString("email"));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -428,8 +428,8 @@ public class Database {
         try {
             mUpdateOneMessage.setString(1, title);
             mUpdateOneMessage.setString(2, message);
-            mUpdateOneMessage.setTimestamp(2, new Timestamp(new Date().getTime()));
-            mUpdateOneMessage.setInt(3, id);
+            mUpdateOneMessage.setTimestamp(3, new Timestamp(new Date().getTime()));
+            mUpdateOneMessage.setInt(4, id);
             res = mUpdateOneMessage.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -562,7 +562,7 @@ public class Database {
             mSelectOneVote.setInt(1, id);
             ResultSet rs = mSelectOneVote.executeQuery();
             if (rs.next()) {
-                res = new Vote(rs.getInt("id"), rs.getDate("vote_date"), rs.getInt("message_id"), rs.getString("username"), rs.getInt("is_upvote"));//added
+                res = new Vote(rs.getInt("id"), new Date(rs.getTimestamp("vote_date").getTime()), rs.getInt("message_id"), rs.getString("username"), rs.getInt("is_upvote"));//added
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -576,7 +576,7 @@ public class Database {
             mSelectVoteByMessageAndUsername.setInt(1, message_id);
             mSelectVoteByMessageAndUsername.setString(2, username);
             ResultSet rs = mSelectVoteByMessageAndUsername.executeQuery();
-            res = new Vote(rs.getInt("id"), rs.getDate("vote_date"), rs.getInt("message_id"), rs.getString("username"), rs.getInt("is_upvote"));//added
+            res = new Vote(rs.getInt("id"), new Date(rs.getDate("vote_date").getTime()), rs.getInt("message_id"), rs.getString("username"), rs.getInt("is_upvote"));//added
         } catch (SQLException e) {
             e.printStackTrace();
         }
