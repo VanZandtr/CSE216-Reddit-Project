@@ -22,6 +22,8 @@ import java.util.ArrayList;
 
 import edu.lehigh.cse216.buzzboys.Data.Message;
 
+//TODO - add comment button and listener
+
 class ItemListAdapter extends RecyclerView.Adapter<ItemListAdapter.ViewHolder> {
 
     class ViewHolder extends RecyclerView.ViewHolder {

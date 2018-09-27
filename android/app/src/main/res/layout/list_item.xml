@@ -7,41 +7,45 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical">
+
         <Button
             android:id="@+id/message_upvote"
-            android:text="@string/upvote"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:text="@string/upvote" />
+
         <Button
             android:id="@+id/message_downvote"
-            android:text="@string/downvote"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:text="@string/downvote" />
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical">
+
         <TextView
             android:id="@+id/listItemIndex"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:fontFamily="casual"
-            android:textSize="50dp"
-            android:text="" />
+            android:text=""
+            android:textSize="24sp" />
 
         <TextView
             android:id="@+id/listItemText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="30dp"
             android:fontFamily="casual"
-            android:text="" />
+            android:text=""
+            android:textSize="12sp" />
     </LinearLayout>
+
     <TextView
         android:id="@+id/listItemUpvoteCount"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text=""/>
+        android:layout_width="25dp"
+        android:layout_height="48dp"
+        android:text="" />
 </LinearLayout>

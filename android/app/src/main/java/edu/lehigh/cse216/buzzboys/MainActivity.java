@@ -1,6 +1,7 @@
 package edu.lehigh.cse216.buzzboys;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -25,6 +26,8 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 import edu.lehigh.cse216.buzzboys.Data.Message;
+
+import static edu.lehigh.cse216.buzzboys.LoginActivity.PREFS_NAME;
 
 /**
  * Main Activity / Landing page for the user. Displays all messages
@@ -118,7 +121,15 @@ public class MainActivity extends AppCompatActivity {
             startActivityForResult(i, 789); // 789 is the number that will come back to us
             return true;
         }
-
+/*
+        if (id == R.id.logout) {
+            SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+            SharedPreferences.Editor editor = settings.edit();
+            editor.remove("logged");
+            editor.commit();
+            finish();
+        }
+        */
         return super.onOptionsItemSelected(item);
     }
 }

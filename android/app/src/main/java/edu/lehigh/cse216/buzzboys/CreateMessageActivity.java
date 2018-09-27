@@ -2,6 +2,7 @@ package edu.lehigh.cse216.buzzboys;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.provider.CalendarContract;
@@ -39,6 +40,8 @@ import edu.lehigh.cse216.buzzboys.Data.User;
  */
 public class CreateMessageActivity extends AppCompatActivity {
 
+    public static final String PREFS_NAME = "LoginPrefs";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,18 +54,19 @@ public class CreateMessageActivity extends AppCompatActivity {
         tv.setText(label_contents);
 
         //If we're not logged in, make the user log in
-//        if (User.currentUser == null) {
-//            Intent i = new Intent(getApplicationContext(), LoginActivity.class);
-//            i.putExtra("From", "CreateMessage");
-//            startActivityForResult(i, 789); // 789 is the number that will come back to us
-//
-//        }
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        if (!(settings.getString("logged", "").equals("logged"))) {
+            Intent intent = new Intent(CreateMessageActivity.this, LoginActivity.class);
+            startActivity(intent);
+            Toast.makeText(getApplicationContext(), "You need to login in order to vote.", Toast.LENGTH_SHORT).show();
+        }
 
         // The OK button gets the text from the input box and returns it to the calling activity
         final EditText subjectBox = (EditText) findViewById(R.id.create_message_subject_box);
         final EditText messageBox = (EditText) findViewById(R.id.create_message_object_box);
         Button bOk = (Button) findViewById(R.id.buttonOk);
         bOk.setOnClickListener(new View.OnClickListener() {
+
             @Override
             public void onClick(final View view) {
                 if (!subjectBox.getText().toString().equals("") && !messageBox.getText().toString().equals("")) {
@@ -120,7 +124,5 @@ public class CreateMessageActivity extends AppCompatActivity {
             setResult(Activity.RESULT_CANCELED);
             finish();
         }
-
     }
-
 }
