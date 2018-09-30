@@ -44,7 +44,7 @@ public class App {
         //     with IDs starting over from 0.
         final StoreHandler store = new StoreHandler();
         
-        /*// Set up the location for serving static files
+        // Set up the location for serving static files
         // Set up the location for serving static files.  If the STATIC_LOCATION
         // environment variable is set, we will serve from it.  Otherwise, serve
         // from "/web"
@@ -53,7 +53,7 @@ public class App {
             Spark.staticFileLocation("/web");
         } else {
             Spark.staticFiles.externalLocation(static_location_override);
-        }*/
+        }
     
         // /messages
 
