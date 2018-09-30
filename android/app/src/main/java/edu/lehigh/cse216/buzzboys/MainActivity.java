@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 
@@ -52,6 +53,14 @@ public class MainActivity extends AppCompatActivity {
         ItemListAdapter adapter = new ItemListAdapter(this, messages);
         rv.setAdapter(adapter);
 
+        //have to be logged in to see messages
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        if (!settings.getString("logged", "").toString().equals("logged")) {
+            Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+            startActivity(intent);
+            Toast.makeText(getApplicationContext(), "Please Login.", Toast.LENGTH_SHORT).show();
+        }
+
         if (VolleySingleton.OFFLINE)
             for (Message m : Message.TestMessages)
                 messages.add(m);
@@ -79,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Intent i = new Intent(getApplicationContext(), CreateMessageActivity.class);
                 i.putExtra("From", "MainActivity");
-                startActivityForResult(i, 789); // 789 is the number that will come back to us
+                startActivityForResult(i, 789);
             }
         });
     }
@@ -121,6 +130,8 @@ public class MainActivity extends AppCompatActivity {
             startActivityForResult(i, 789); // 789 is the number that will come back to us
             return true;
         }
+
+        //TODO --- logout button
 /*
         if (id == R.id.logout) {
             SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);

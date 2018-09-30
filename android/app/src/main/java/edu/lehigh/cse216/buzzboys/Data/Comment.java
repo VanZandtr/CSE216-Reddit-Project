@@ -30,6 +30,10 @@ public class Comment {
         mId = id;
     }
 
+    public Comment(String comment) {
+        mComment = comment;
+    }
+
     public static Comment getFromJSON(JSONObject json) throws JSONException {
         Comment c = null;
 

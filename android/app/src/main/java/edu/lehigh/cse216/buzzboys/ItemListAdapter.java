@@ -1,6 +1,10 @@
 package edu.lehigh.cse216.buzzboys;
 
 import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v7.view.menu.MenuView;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -16,15 +20,21 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 
+import edu.lehigh.cse216.buzzboys.Data.Comment;
 import edu.lehigh.cse216.buzzboys.Data.Message;
 
 //TODO - add comment button and listener
 
 class ItemListAdapter extends RecyclerView.Adapter<ItemListAdapter.ViewHolder> {
+    public int currentMessageId;
+    boolean getComment;
 
     class ViewHolder extends RecyclerView.ViewHolder {
         TextView index;
@@ -32,6 +42,7 @@ class ItemListAdapter extends RecyclerView.Adapter<ItemListAdapter.ViewHolder> {
         TextView upvoteCount;
         Button upvote;
         Button downvote;
+        Button comments;
         int messageId = -1;
 
         ViewHolder(final View itemView) {
@@ -41,7 +52,7 @@ class ItemListAdapter extends RecyclerView.Adapter<ItemListAdapter.ViewHolder> {
             this.upvoteCount = (TextView) itemView.findViewById(R.id.listItemUpvoteCount);
             upvote = (Button) itemView.findViewById(R.id.message_upvote);
             downvote = (Button) itemView.findViewById(R.id.message_downvote);
-
+            comments = (Button) itemView.findViewById(R.id.button4);
 
             View.OnClickListener upListener = new View.OnClickListener() {
                 @Override
@@ -93,9 +104,23 @@ class ItemListAdapter extends RecyclerView.Adapter<ItemListAdapter.ViewHolder> {
             };
 
             downvote.setOnClickListener(downListener);
+
+
+            View.OnClickListener commentListener = new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    //TODO - fix this code, get right url, get correct space, make getComments method
+                    Intent i = new Intent(itemView.getContext(), ShowAndCreateComment.class);
+                    Bundle bundle=new Bundle();
+                    bundle.putInt("Message_ID", messageId);
+                    i.putExtras(bundle);
+                    itemView.getContext().startActivity(i);
+
+                    }
+            };
+
+            comments.setOnClickListener(commentListener);
         }
-
-
     }
 
     private ArrayList<Message> messages;

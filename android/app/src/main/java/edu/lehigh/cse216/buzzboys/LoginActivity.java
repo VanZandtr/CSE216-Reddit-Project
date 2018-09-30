@@ -179,7 +179,7 @@ public class LoginActivity extends AppCompatActivity {
             Log.d("TheBuzz", "Error parsing JSON user:" + e.getMessage());
             return;
         }
-        Log.d("TheBuzz", "Successfully parsed Useres");
+        Log.d("TheBuzz", "Successfully parsed Users");
         for (int i = 0; i<users.size(); i++){
             if(user == users.get(i)){
                 Log.d("TheBuzz", "Successfully found a user, logging them in");
@@ -189,6 +189,13 @@ public class LoginActivity extends AppCompatActivity {
                 editor.putString("logged", "logged");
                 editor.commit();
                 Toast.makeText(getApplicationContext(), "Successfull Login, Redirecting Home", Toast.LENGTH_SHORT).show();
+
+                try {
+                    User.setCurrentUser(user);
+                } catch (JSONException e) {
+                    Log.d("TheBuzz", "Error setting current user");
+                }
+
                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                 startActivity(intent);
             }

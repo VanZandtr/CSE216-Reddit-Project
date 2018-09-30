@@ -26,6 +26,8 @@ public class VolleySingleton {
     public final static String messageUrl = baseUrl + "/messages/%d"; //insert message id
     public final static String messageUpvoteUrl = baseUrl + "/messages/%d/upvote"; //insert message id
     public final static String messageDownvoteUrl = baseUrl + "/messages/%d/downvote"; //insert message id
+    public final static String commentsUrl = baseUrl + "/comments/%d/message"; //insert message id //TODO -- get the correct url for insert a comment on a messageID
+
 
     private static VolleySingleton instance;
     private RequestQueue requestQueue;

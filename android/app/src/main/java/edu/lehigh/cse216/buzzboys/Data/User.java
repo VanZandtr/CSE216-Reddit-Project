@@ -22,6 +22,7 @@ public class User {
         lastName = ln;
         email = e;
         password = p;
+        //TODO- add hash and salt here?
     }
 
     public User(int i, String n, String fn, String ln, String e, String p) {
@@ -36,6 +37,10 @@ public class User {
 
     public static void setCurrentUser(User user) throws JSONException {
         currentUser = user;
+    }
+
+    public static User getCurrentUser() throws JSONException {
+        return currentUser;
     }
 
     public String getPassword(){
