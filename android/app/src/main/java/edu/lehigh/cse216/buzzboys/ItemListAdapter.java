@@ -110,7 +110,7 @@ class ItemListAdapter extends RecyclerView.Adapter<ItemListAdapter.ViewHolder> {
                 @Override
                 public void onClick(View view) {
                     //TODO - fix this code, get right url, get correct space, make getComments method
-                    Intent i = new Intent(itemView.getContext(), ShowAndCreateComment.class);
+                    Intent i = new Intent(itemView.getContext(), ShowCommentsActivity.class);
                     Bundle bundle=new Bundle();
                     bundle.putInt("Message_ID", messageId);
                     i.putExtras(bundle);

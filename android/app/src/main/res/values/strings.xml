@@ -24,6 +24,9 @@
 
     <string name="commentbox">comment</string>
 
+    <string name="createCommentActivityButton">Comment</string>
+
+
 
     <!-- Strings for login/register activity -->
     <string name="hint_password"></string>
