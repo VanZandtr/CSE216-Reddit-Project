@@ -9,6 +9,9 @@ var $: any;
 // 'this' won't work correctly.
 var newEntryForm: NewEntryForm;
 
+/// This constant indicates the path to our backend server
+const backendUrl = "https://buzzboys.herokuapp.com";
+
 /**
  * NewEntryForm encapsulates all of the code for the form for adding an entry
  */
@@ -44,7 +47,7 @@ class NewEntryForm {
         // onSubmitResponse
         $.ajax({
             type: "POST",
-            url: "/messages",
+            url: backendUrl + "/messages",
             dataType: "json",
             data: JSON.stringify({ mMessage: msg }),
             success: newEntryForm.onSubmitResponse
@@ -89,7 +92,7 @@ class ElementList {
         // Issue a GET, and then pass the result to update()
         $.ajax({
             type: "GET",
-            url: "/messages",
+            url: backendUrl + "/messages",
             dataType: "json",
             success: mainList.update
         });
