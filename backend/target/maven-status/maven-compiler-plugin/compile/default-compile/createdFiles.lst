@@ -15,4 +15,5 @@ edu\lehigh\cse216\buzzboys\backend\StoreHandler.class
 edu\lehigh\cse216\buzzboys\backend\UserReq.class
 edu\lehigh\cse216\buzzboys\backend\Message.class
 edu\lehigh\cse216\buzzboys\backend\VoteStore.class
+edu\lehigh\cse216\buzzboys\backend\SimpleRequest.class
 edu\lehigh\cse216\buzzboys\backend\StructuredResponse.class

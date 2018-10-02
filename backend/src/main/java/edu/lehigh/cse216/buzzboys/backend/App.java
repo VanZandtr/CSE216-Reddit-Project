@@ -62,6 +62,13 @@ public class App {
             Spark.staticFiles.externalLocation(static_location_override);
         }
 
+        //index.html endpoint to get frontend
+         // Set up a route for serving the main page
+        Spark.get("/", (req, res) -> {
+            res.redirect("/index.html");
+            return "";
+        });
+
         //create tables
         // Database db = Database.getDatabase();
         // db.createMessagesTable();
