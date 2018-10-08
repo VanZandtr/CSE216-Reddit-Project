@@ -9,11 +9,10 @@ import org.json.JSONObject;
 import java.util.Date;
 
 public class Message {
-    public int ID;
-    public int userID;
-    public String userName;
-    public String subject;
-    public String message;
+    public int mid;
+    public int uid;
+    public String title;
+    public String content;
     public int upvotes;
     public int downvotes;
 
@@ -23,23 +22,23 @@ public class Message {
     public int upvoted;
 
     public Message(int i, int ui, String sub, String mes, int up, int down) {
-        ID = i;
-        userID = ui;
-        subject = sub;
-        message = mes;
+        mid = i;
+        uid = ui;
+        title = sub;
+        content = mes;
         upvotes = up;
         downvotes = down;
     }
 
-    public Message(int mid, String uid, String sub, Date d) {
-        subject = sub;
-        userName = uid;
-        ID = mid;
+    public Message(int messageId, String sub, Date d) {
+        title = sub;
+       // uid = userId;
+        mid = messageId;
     }
 
     public Message(String sub, String mes) {
-        subject = sub;
-        message = mes;
+        title = sub;
+        content = mes;
     }
 
     public static Message getFromJSON(JSONObject json) throws JSONException {
@@ -52,7 +51,7 @@ public class Message {
         //int up = json.getInt("upvotes");
         //int down = json.getInt("downvotes");
 
-        m = new Message(id, uid, sub, null);
+        m = new Message(id, sub, null);
         return m;
     }
 

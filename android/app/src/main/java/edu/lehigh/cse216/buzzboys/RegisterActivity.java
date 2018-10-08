@@ -102,7 +102,7 @@ public class RegisterActivity extends AppCompatActivity {
 
         if (!name.equals("") && !email.equals("") && email.contains("@") && !password.equals(null)) {
 
-            User user = new User(100, name, "", "", email, password);
+            User user = new User(100, name, "", email, password);
             String currentTime = Calendar.getInstance().getTime().toString();
 
             //TODO - add hash/salt for password here or in User creation

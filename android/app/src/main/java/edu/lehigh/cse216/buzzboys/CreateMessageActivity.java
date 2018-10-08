@@ -81,9 +81,7 @@ public class CreateMessageActivity extends AppCompatActivity {
                         Log.d("TheBuzz", "Error getting current user");
                     }
 
-
-                    //TODO -- add final strings in volleySingleton
-                    String json = "{\"userId\":\"" + user.name + "\",\"cDate\":\"" + currentTime + "\",\"mContent\":\"" + messageBox.getText().toString() + "\",\"mTitle\":\"" + subjectBox.getText().toString() + "\"}";
+                    String json = "{\"uid\":\"" + user.uid + "\",\"date_created\":\"" + currentTime + "\",\"content\":\"" + messageBox.getText().toString() + "\",\"title\":\"" + subjectBox.getText().toString() + "\"}";
                     try {
                         JSONObject jsonObject = new JSONObject(json);
 

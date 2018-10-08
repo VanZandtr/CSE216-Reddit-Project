@@ -67,7 +67,7 @@ public class ShowCommentsActivity extends AppCompatActivity {
                     comments.add(c);
             else {
                 VolleySingleton volleySingleton = VolleySingleton.getInstance(this);
-                StringRequest stringRequest = new StringRequest(Request.Method.GET, VolleySingleton.commentsUrl,//TODO -- add message ID accessor
+                StringRequest stringRequest = new StringRequest(Request.Method.GET, VolleySingleton.commentsUrl + "/" + messageId,
                         new Response.Listener<String>() {
                             @Override
                             public void onResponse(String response) {

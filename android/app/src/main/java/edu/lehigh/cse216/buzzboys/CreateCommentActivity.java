@@ -72,22 +72,21 @@ public class CreateCommentActivity extends AppCompatActivity {
                 if (!commentBox.getText().toString().equals("")) {
                     Comment c = new Comment(commentBox.getText().toString());
 
-                    try {
+                    try{
                         user = User.getCurrentUser();
-                    }catch (JSONException e) {
-                        Log.d("TheBuzz", "Error getting current user");
+                    }catch(Exception e){
+                        Log.d("error:", "could not get current user");
                     }
 
                     String currentTime = Calendar.getInstance().getTime().toString();
 
-                    //TODO -- add final strings in volleySingleton
-                    String json = "{\"userId\":\"" + user.name + "\",\"cDate\":\"" + currentTime + "\",\"mComment\":\"" + commentBox.getText().toString() + "\",\"mMessageID\":\"" + Integer.parseInt(messageId) + "\"}"; //TODO -- get correct string for insetting a comment on a message by a user
+                    String json = "{\"uid\":\"" + user.uid + "\",\"date_created\":\"" + currentTime + "\",\"content\":\"" + commentBox.getText().toString() + "\",\"mid\":\"" + Integer.parseInt(messageId) + "\"}";
                     try {
                         JSONObject jsonObject = new JSONObject(json);
 
                         VolleySingleton volleySingleton = VolleySingleton.getInstance(view.getContext());
 
-                        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, VolleySingleton.commentsUrl, jsonObject,
+                        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, VolleySingleton.commentsUrl + "/" + messageId, jsonObject,
                                 new Response.Listener<JSONObject>() {
                                     @Override
                                     public void onResponse(JSONObject response) {

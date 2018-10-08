@@ -6,30 +6,27 @@ import org.json.JSONObject;
 import java.util.Date;
 
 public class User {
-    public int ID;
-    public String name;
-    public String firstName;
-    public String lastName;
+    public int uid;
+    public String username;
+    public String realname;
     public String email;
     private String password;
 
     public static User currentUser;
 
-    public User(int i, String n, String fn, String ln, String e, String p, Date date) {
-        ID = i;
-        name = n;
-        firstName = fn;
-        lastName = ln;
+    public User(int i, String n, String rn, String e, String p, Date date) {
+        uid = i;
+        username = n;
+        realname = rn;
         email = e;
         password = p;
         //TODO- add hash and salt here?
     }
 
-    public User(int i, String n, String fn, String ln, String e, String p) {
-        ID = i;
-        name = n;
-        firstName = fn;
-        lastName = ln;
+    public User(int i, String n, String rn, String e, String p) {
+        uid = i;
+        username = n;
+        realname = rn;
         email = e;
         password = p;
         //TODO- add hash and salt here?
@@ -55,20 +52,19 @@ public class User {
     public static User getFromJSON(JSONObject json) throws JSONException {
         User u = null;
 
-        int id = json.getInt("userID");
-        String name = json.getString("username");
-        String firstname = json.getString("firstname");
-        String lastname = json.getString("lastname");
+        int uid = json.getInt("useruid");
+        String username = json.getString("username");
+        String realname = json.getString("realname");
         String email = json.getString("email");
         String password = json.getString("password");
 
 
-        u = new User(id, name, firstname, lastname, email, password, null);
+        u = new User(uid, username, realname, email, password, null);
         return u;
     }
 
     //A list of statically named users, for when
     public static User[] TestUsers = new User[] {
-            new User(0, "User1", "John", "Doe", "john@gmail.com", "password"),
+            new User(0, "User1", "John Doe", "john@gmail.com", "password"),
     };
 }

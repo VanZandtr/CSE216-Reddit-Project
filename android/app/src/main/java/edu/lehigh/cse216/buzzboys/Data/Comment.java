@@ -10,34 +10,34 @@ import java.util.Date;
 public class Comment {
 
 
-    public int mId;
-    public String mUserID;
-    public int mMessageID;
-    public String mComment;
+    public int cid;
+    public String uid;
+    public int mid;
+    public String content;
 
 
     public Comment(int id, String user_id, int message_id, String comment) {
-        mId = id;
-        mUserID = user_id;
-        mMessageID = message_id;
-        mComment = comment;
+        cid = id;
+        uid = user_id;
+        mid = message_id;
+        content = comment;
     }
 
     public Comment(int id, String user_id, int message_id, String comment, Date d) {
-        mMessageID = message_id;
-        mComment = comment;
-        mUserID = user_id;
-        mId = id;
+        mid = message_id;
+        content = comment;
+        uid = user_id;
+        cid = id;
     }
 
     public Comment(String comment) {
-        mComment = comment;
+        content = comment;
     }
 
     public static Comment getFromJSON(JSONObject json) throws JSONException {
         Comment c = null;
 
-        int id = json.getInt("mId");
+        int id = json.getInt("cid");
         int message_id = json.getInt("messageID");
         String comment = json.getString("comment");
         String uid = json.getString("userId");

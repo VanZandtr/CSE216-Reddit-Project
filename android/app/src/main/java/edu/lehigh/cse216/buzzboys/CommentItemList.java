@@ -62,7 +62,7 @@ class CommentItemList extends RecyclerView.Adapter<CommentItemList.ViewHolder> {
     public void onBindViewHolder(ViewHolder holder, int position) {
         Comment comment = comments.get(position);
         //holder.index.setText(m.subject);
-        holder.text.setText(comment.mComment);
-        holder.commentId = comment.mId;
+        holder.text.setText(comment.content);
+        holder.commentId = comment.mid;
     }
 }

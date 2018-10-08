@@ -109,7 +109,6 @@ class ItemListAdapter extends RecyclerView.Adapter<ItemListAdapter.ViewHolder> {
             View.OnClickListener commentListener = new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    //TODO - fix this code, get right url, get correct space, make getComments method
                     Intent i = new Intent(itemView.getContext(), ShowCommentsActivity.class);
                     Bundle bundle=new Bundle();
                     bundle.putInt("Message_ID", messageId);
@@ -145,9 +144,9 @@ class ItemListAdapter extends RecyclerView.Adapter<ItemListAdapter.ViewHolder> {
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         Message m = messages.get(position);
-        holder.index.setText(m.subject);
-        holder.text.setText(m.message);
+        holder.index.setText(m.title);
+        holder.text.setText(m.content);
         holder.upvoteCount.setText(Integer.toString(m.upvotes - m.downvotes));
-        holder.messageId = m.ID;
+        holder.messageId = m.mid;
     }
 }

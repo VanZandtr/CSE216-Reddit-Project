@@ -32,8 +32,6 @@ import static edu.lehigh.cse216.buzzboys.LoginActivity.PREFS_NAME;
 
 /**
  * Main Activity / Landing page for the user. Displays all messages
- * TODO indicate whether a user upvoted/downvoted the message
- * TODO If the user tries to upvote when they aren't logged in, start LoginActivity
  *
  */
 public class MainActivity extends AppCompatActivity {
