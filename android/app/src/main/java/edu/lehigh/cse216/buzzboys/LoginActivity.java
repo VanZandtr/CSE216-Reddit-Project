@@ -90,7 +90,7 @@ public class LoginActivity extends AppCompatActivity {
                 user = c;
         else {
             user.email = email;
-            user.getPassword();
+            user.setPassword(password);
             VolleySingleton volleySingleton = VolleySingleton.getInstance(this);
             StringRequest stringRequest = new StringRequest(Request.Method.GET, VolleySingleton.usersUrl,
                     new Response.Listener<String>() {
@@ -124,7 +124,7 @@ public class LoginActivity extends AppCompatActivity {
         }
         Log.d("TheBuzz", "Successfully parsed Users");
         for (int i = 0; i<users.size(); i++){
-            if(user == users.get(i)){
+            if(user.email == users.get(i).email && user.getPassword() == users.get(i).getPassword()){
                 Log.d("TheBuzz", "Successfully found a user, logging them in");
                 //get sharedPrefences
                 SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
@@ -132,6 +132,9 @@ public class LoginActivity extends AppCompatActivity {
                 editor.putString("logged", "logged");
                 editor.commit();
                 Toast.makeText(getApplicationContext(), "Successfull Login, Redirecting Home", Toast.LENGTH_SHORT).show();
+
+                //set the rest of the user fields
+                user = users.get(i);
 
                 try {
                     User.setCurrentUser(user);

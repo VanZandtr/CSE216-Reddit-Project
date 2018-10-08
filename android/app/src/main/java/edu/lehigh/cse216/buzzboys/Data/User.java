@@ -47,6 +47,11 @@ public class User {
         return password;
     }
 
+    public String setPassword(String password){
+        this.password = password;
+        return password;
+    }
+
     public static User getFromJSON(JSONObject json) throws JSONException {
         User u = null;
 
