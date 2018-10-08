@@ -30,7 +30,7 @@ class CommentItemList extends RecyclerView.Adapter<CommentItemList.ViewHolder> {
         //TextView index;
         TextView text;
         int messageId = -1;
-        int commentId;
+        int commentId = -1;
 
         ViewHolder(final View itemView) {
             super(itemView);

@@ -54,7 +54,7 @@ public class CreateMessageActivity extends AppCompatActivity {
         String label_contents = input.getStringExtra("label_contents");
         TextView tv = (TextView) findViewById(R.id.specialMessage);
         tv.setText(label_contents);
-
+/*
         //If we're not logged in, make the user log in
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
         if (!(settings.getString("logged", "").equals("logged"))) {
@@ -62,7 +62,7 @@ public class CreateMessageActivity extends AppCompatActivity {
             startActivity(intent);
             Toast.makeText(getApplicationContext(), "You need to login in order to vote.", Toast.LENGTH_SHORT).show();
         }
-
+*/
         // The OK button gets the text from the input box and returns it to the calling activity
         final EditText subjectBox = (EditText) findViewById(R.id.create_message_subject_box);
         final EditText messageBox = (EditText) findViewById(R.id.create_message_object_box);

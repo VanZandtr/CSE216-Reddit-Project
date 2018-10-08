@@ -38,7 +38,6 @@ import edu.lehigh.cse216.buzzboys.Data.User;
 /**
  * A screen for creating and posting a message
  * TODO Logic for updating
- * TODO button for comments/comment implementation
  */
 public class CreateCommentActivity extends AppCompatActivity {
 

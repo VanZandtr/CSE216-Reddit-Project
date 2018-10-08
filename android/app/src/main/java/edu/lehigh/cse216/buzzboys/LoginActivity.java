@@ -34,7 +34,7 @@ public class LoginActivity extends AppCompatActivity {
     ProgressDialog progressDialog;
     private EditText loginInputEmail, loginInputPassword;
     private Button btnlogin;
-    private Button btnLinkSignup;
+    //private Button btnLinkSignup;
     public static final String PREFS_NAME = "LoginPrefs";
 
     User user;
@@ -46,17 +46,18 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
 
         //check if were are already logged in
+        /*
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
         if (settings.getString("logged", "").toString().equals("logged")) {
             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
             startActivity(intent);
             Toast.makeText(getApplicationContext(), "You are already Logged in, Redirecting Home", Toast.LENGTH_SHORT).show();
         }
-
+        */
             loginInputEmail = (EditText) findViewById(R.id.login_input_email);
             loginInputPassword = (EditText) findViewById(R.id.login_input_password);
             btnlogin = (Button) findViewById(R.id.btn_login);
-            btnLinkSignup = (Button) findViewById(R.id.btn_link_signup);
+            //btnLinkSignup = (Button) findViewById(R.id.btn_link_signup);
             // Progress dialog
             progressDialog = new ProgressDialog(this);
             progressDialog.setCancelable(false);
@@ -67,7 +68,7 @@ public class LoginActivity extends AppCompatActivity {
                     loginUser(loginInputEmail.getText().toString(), loginInputPassword.getText().toString());
                 }
             });
-
+/*
             btnLinkSignup.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -76,6 +77,7 @@ public class LoginActivity extends AppCompatActivity {
 
                 }
             });
+*/
         }
 
     private void loginUser(final String email,final String password){
@@ -106,65 +108,6 @@ public class LoginActivity extends AppCompatActivity {
             );
             volleySingleton.addRequest(stringRequest);
         }
-
-
-        /*
-        StringRequest strReq = new StringRequest(Request.Method.POST,
-                URL_FOR_LOGIN, new Response.Listener<String>() { //TODO -- change to find a user and login
-
-            @Override
-            public void onResponse(String response) {
-                Log.d(TAG, "Register Response: " + response.toString());
-                hideDialog();
-                try {
-                    JSONObject jObj = new JSONObject(response);
-                    boolean error = jObj.getBoolean("error");
-
-                    if (!error) {
-
-                        //get sharedPrefences
-                        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-                        SharedPreferences.Editor editor = settings.edit();
-                        editor.putString("logged", "logged");
-                        editor.commit();
-                        Toast.makeText(getApplicationContext(), "Successfull Login, Redirecting Home", Toast.LENGTH_SHORT).show();
-                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                        startActivity(intent);
-
-
-                    } else {
-
-                        String errorMsg = jObj.getString("error_msg");
-                        Toast.makeText(getApplicationContext(),
-                                errorMsg, Toast.LENGTH_LONG).show();
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.e(TAG, "Login Error: " + error.getMessage());
-                Toast.makeText(getApplicationContext(),
-                        error.getMessage(), Toast.LENGTH_LONG).show();
-                hideDialog();
-            }
-        }) {
-            @Override
-            protected Map<String, String> getParams() {
-                // Posting params to login url
-                Map<String, String> params = new HashMap<String, String>();
-                params.put("email", email);
-                params.put("password", password);
-                return params;
-            }
-        };
-        // Adding request to request queue
-        //VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(strReq,cancel_req_tag);
-        VolleySingleton.getInstance(getApplication()).addRequest(strReq);
-        */
     }
 
     private void getUser(String response) {
@@ -207,8 +150,6 @@ public class LoginActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         }
-        //RecyclerView rv = (RecyclerView) findViewById(R.id.message_list_view);
-        //rv.getAdapter().notifyDataSetChanged();
     }
 
     private void showDialog(){
