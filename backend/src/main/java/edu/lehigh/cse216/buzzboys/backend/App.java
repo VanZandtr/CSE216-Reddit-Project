@@ -190,7 +190,9 @@ public class App {
             response.status(200);
             response.type("application/json");
             // NB: createEntry checks for null title and message
-            int newId = store.user.createEntry(req.first, req.last, req.username, req.email);
+            byte[] salt = Security.generateSalt();
+            byte[] hashedPass = Security.hashPassword(req.password, salt);
+            int newId = store.user.createEntry(req.realName, req.userName, req.email, hashedPass, salt);
             if (newId == -1) {
                 return gson.toJson(new StructuredResponse("error", "error performing insertion", null));
             } else {
@@ -209,7 +211,7 @@ public class App {
             // ensure status 200 OK, with a MIME type of JSON
             response.status(200);
             response.type("application/json");
-            User data = store.user.readOne(idx);
+            UserLite data = store.user.readOne(idx);
             if (data == null) {
                 return gson.toJson(new StructuredResponse("error", idx + " not found", null));
             } else {
@@ -230,7 +232,9 @@ public class App {
             // ensure status 200 OK, with a MIME type of JSON
             response.status(200);
             response.type("application/json");
-            User result = store.user.updateOne(idx, req.username, req.first, req.last, req.email);
+            byte[] salt = Security.generateSalt();
+            byte[] hashedPass = Security.hashPassword(req.password, salt);
+            UserLite result = store.user.updateOne(idx, req.realName, req.userName, req.email, hashedPass, salt);
             if (result == null) {
                 return gson.toJson(new StructuredResponse("error", "unable to update row " + idx, null));
             } else {
@@ -267,7 +271,7 @@ public class App {
             // ensure status 200 OK, with a MIME type of JSON
             response.status(200);
             response.type("application/json");
-            User data = store.user.readOne(idx);
+            UserLite data = store.user.readOne(idx);
             if (data == null) {
                 return gson.toJson(new StructuredResponse("error", idx + " not found", null));
             } else {

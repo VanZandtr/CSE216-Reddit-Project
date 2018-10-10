@@ -281,13 +281,13 @@ public class Database {
         return count;
     }
 
-    int insertUserRow(String realname, String username, String email, byte[] password, String salt) {
+    int insertUserRow(String realname, String username, String email, byte[] password, byte[] salt) {
         int count = 0;
         try {
             mInsertOneUser.setString(1, username);
             mInsertOneUser.setString(2, realname);
             mInsertOneUser.setString(3, email);
-            mInsertOneUser.setString(4, salt);
+            mInsertOneUser.setBytes(4, salt);
             mInsertOneUser.setBytes(5, password);
             mInsertOneUser.setTimestamp(5, new Timestamp(new Date().getTime()));
             count += mInsertOneUser.executeUpdate();
@@ -464,7 +464,7 @@ public class Database {
         return res;
     }
 
-    int updateOneUser(int id, String realname, String username, String email, byte[] password, String salt) {
+    int updateOneUser(int id, String realname, String username, String email, byte[] password, byte[] salt) {
         int res = -1;
         try {
             //int id, Date date, String real, String user, String email
@@ -473,7 +473,7 @@ public class Database {
             mUpdateOneUser.setString(2, realname);
             mUpdateOneUser.setString(3, email);
             mUpdateOneUser.setBytes(4, password);
-            mUpdateOneUser.setString(5, salt);
+            mUpdateOneUser.setBytes(5, salt);
             mUpdateOneUser.setInt(6, id);
             res = mUpdateOneUser.executeUpdate();
         } catch (SQLException e) {

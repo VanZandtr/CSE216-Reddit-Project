@@ -20,12 +20,12 @@ public class User extends UserLite {
 
     public byte[] uPassword;
 
-    public String uSalt;
+    public byte[] uSalt;
 
     /**
      * Full constructor for user
      */
-    User(int id, Date date, String real, String user, String email, byte[] pass, String salt) {
+    User(int id, Date date, String real, String user, String email, byte[] pass, byte[] salt) {
         super(id, date, real, user, email);
         uPassword = pass;
         uSalt = salt;
