@@ -4,7 +4,12 @@ import java.util.List;
 import java.util.ArrayList;
 
 
-public class UserStore extends DataStore<UserLite, User> {
+/**
+ * DataStore for users. This implementation uses UserLite exclusively, because the only 
+ * extra fields from the full User class are the password and salt, which should never 
+ * be returned to the client.   
+ */
+public class UserStore extends DataStore<UserLite, UserLite> {
     
     public UserStore() {
         super();
@@ -30,8 +35,8 @@ public class UserStore extends DataStore<UserLite, User> {
      * Get one user and its full contents
      */
     @Override
-    public synchronized User readOne(int id) {
-        User data = db.selectOneUser(id);
+    public synchronized UserLite readOne(int id) {
+        UserLite data = db.selectOneUser(id);
         return (data == null) ? null : data;
     }
 
@@ -54,11 +59,11 @@ public class UserStore extends DataStore<UserLite, User> {
      * @param salt
      * @return The updated user object, or null if the update failed 
      */
-    public synchronized User updateOne(int id, String realname, String username, String email, String password, String salt) {
+    public synchronized UserLite updateOne(int id, String realname, String username, String email, String password, String salt) {
         System.out.println(id + " " + username +  " " + realname + " " + email);
         if(readOne(id) == null || username == null || realname == null || password == null || salt == null)
             return null;
-        return (db.updateOneUser(id, realname, username, email, password, salt) == -1) ? null : new User(db.selectOneUser(id));
+        return (db.updateOneUser(id, realname, username, email, password, salt) == -1) ? null : new UserLite(db.selectOneUser(id));
     }
 
     /**
