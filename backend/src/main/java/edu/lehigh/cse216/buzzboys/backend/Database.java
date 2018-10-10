@@ -178,7 +178,7 @@ public class Database {
             db.mSelectOneUser = db.mConnection.prepareStatement("SELECT * from users WHERE id = ?");
             db.mUpdateOneMessage = db.mConnection.prepareStatement("UPDATE messages SET title = ? message = ?, last_updated = ? WHERE id = ?");
             //Add functionality to update one field each
-            db.mUpdateOneUser = db.mConnection.prepareStatement("UPDATE users SET username = ?, firstname = ?, lastname = ?, email = ? WHERE id = ?");
+            db.mUpdateOneUser = db.mConnection.prepareStatement("UPDATE users SET username = ?, realname = ?, email = ?, password = ?, salt = ? WHERE uid = ?");
             db.mUpdateOneMessageUp = db.mConnection.prepareStatement("UPDATE messages SET upvotes = ? WHERE id = ?");
             db.mUpdateOneMessageDown = db.mConnection.prepareStatement("UPDATE messages SET downvotes = ? WHERE id = ?");
             db.mSelectOneVote = db.mConnection.prepareStatement("SELECT * from votes WHERE id=?");
@@ -281,13 +281,14 @@ public class Database {
         return count;
     }
 
-    int insertUserRow(String username, String firstname, String lastname, String email) {//added
+    int insertUserRow(String realname, String username, String email, byte[] password, String salt) {
         int count = 0;
         try {
             mInsertOneUser.setString(1, username);
-            mInsertOneUser.setString(2, firstname);
-            mInsertOneUser.setString(3, lastname);
-            mInsertOneUser.setString(4, email);
+            mInsertOneUser.setString(2, realname);
+            mInsertOneUser.setString(3, email);
+            mInsertOneUser.setString(4, salt);
+            mInsertOneUser.setBytes(5, password);
             mInsertOneUser.setTimestamp(5, new Timestamp(new Date().getTime()));
             count += mInsertOneUser.executeUpdate();
         } catch (SQLException e) {
@@ -342,7 +343,8 @@ public class Database {
         try {
             ResultSet rs = mSelectAllFromUsers.executeQuery();
             while (rs.next())
-                res.add(new UserLite(rs.getInt("id"), new Date(rs.getTimestamp("date_created").getTime()), rs.getString("firstname"), rs.getString("lastname")));//added
+                //int id, Date date, String real, String user, String email
+                res.add(new UserLite(rs.getInt("id"), new Date(rs.getTimestamp("date_created").getTime()), rs.getString("realname"), rs.getString("username"), rs.getString("email")));//added
             rs.close();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -372,13 +374,14 @@ public class Database {
         return res;
     }
 
-    User selectOneUser(int id) {
-        User res = null;
+    UserLite selectOneUser(int id) {
+        UserLite res = null;
         try {
             mSelectOneUser.setInt(1, id);
             ResultSet rs = mSelectOneUser.executeQuery();
             if (rs.next()) {
-                res = new User(rs.getInt("id"), new Date(rs.getTimestamp("date_created").getTime()), rs.getString("firstname"), rs.getString("lastname"), rs.getString("username"), rs.getString("email"));
+                //int id, Date date, String real, String user, String email
+                res = new UserLite(rs.getInt("id"), new Date(rs.getTimestamp("date_created").getTime()), rs.getString("realname"), rs.getString("username"), rs.getString("email"));//added
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -461,14 +464,17 @@ public class Database {
         return res;
     }
 
-    int updateOneUser(int id, String username, String firstname, String lastname, String email) {
+    int updateOneUser(int id, String realname, String username, String email, byte[] password, String salt) {
         int res = -1;
         try {
+            //int id, Date date, String real, String user, String email
+            
             mUpdateOneUser.setString(1, username);
-            mUpdateOneUser.setString(2, firstname);
-            mUpdateOneUser.setString(3, lastname);
-            mUpdateOneUser.setString(4, email);
-            mUpdateOneUser.setInt(5, id);
+            mUpdateOneUser.setString(2, realname);
+            mUpdateOneUser.setString(3, email);
+            mUpdateOneUser.setBytes(4, password);
+            mUpdateOneUser.setString(5, salt);
+            mUpdateOneUser.setInt(6, id);
             res = mUpdateOneUser.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();

@@ -17,7 +17,7 @@ public class UserLite extends Row {
     
     public UserLite(int id, Date date, String real, String user, String email) {
         super(id, date);
-        uRealName = real;
+        uRealName = real;   
         uUserName = user;
         uEmail = email;
     }

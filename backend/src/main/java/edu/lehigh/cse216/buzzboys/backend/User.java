@@ -18,14 +18,14 @@ import java.util.Date;
 public class User extends UserLite {
     
 
-    public String uPassword;
+    public byte[] uPassword;
 
     public String uSalt;
 
     /**
      * Full constructor for user
      */
-    User(int id, Date date, String real, String user, String email, String pass, String salt) {
+    User(int id, Date date, String real, String user, String email, byte[] pass, String salt) {
         super(id, date, real, user, email);
         uPassword = pass;
         uSalt = salt;

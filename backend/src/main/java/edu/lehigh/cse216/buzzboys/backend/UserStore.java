@@ -24,7 +24,7 @@ public class UserStore extends DataStore<UserLite, UserLite> {
      * @param salt
      * @return The id of the user just entered, or -1 if the insert was unsuccessful
      */
-    public synchronized int createEntry(String realname, String username, String email, String password, String salt) {
+    public synchronized int createEntry(String realname, String username, String email, byte[] password, String salt) {
         System.out.println(realname + " " + username + " " + email); //don't print out pass or salt
         if(realname == null || username == null || email == null || password == null || salt == null)
             return -1;
@@ -59,7 +59,7 @@ public class UserStore extends DataStore<UserLite, UserLite> {
      * @param salt
      * @return The updated user object, or null if the update failed 
      */
-    public synchronized UserLite updateOne(int id, String realname, String username, String email, String password, String salt) {
+    public synchronized UserLite updateOne(int id, String realname, String username, String email, byte[] password, String salt) {
         System.out.println(id + " " + username +  " " + realname + " " + email);
         if(readOne(id) == null || username == null || realname == null || password == null || salt == null)
             return null;
