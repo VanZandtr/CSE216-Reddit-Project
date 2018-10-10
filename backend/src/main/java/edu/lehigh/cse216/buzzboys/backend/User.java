@@ -16,37 +16,27 @@ import java.util.Date;
  *                             "email VARCHAR(100), " + "date_created TIMESTAMP NOT NULL)");
  */
 public class User extends UserLite {
-    /**
-     * Every user enters a name field
-     */
-    public String email;
+    
 
-    /**
-     * Every user has a username
-     */
-    public String username;
+    public String uPassword;
+
+    public String uSalt;
 
     /**
      * Full constructor for user
-     * @param uid
-     * @param dateCreated
-     * @param first
-     * @param last
-     * @param user
-     * @param mail
      */
-    User(int uid, Date dateCreated, String first, String last, String user, String mail) {
-        super(uid, dateCreated, first, last);
-        email = mail;
-        username = user;
+    User(int id, Date date, String real, String user, String email, String pass, String salt) {
+        super(id, date, real, user, email);
+        uPassword = pass;
+        uSalt = salt;
     }
 
     /**
      * Copy constructor to create one User from another
      */
     User(User data) {
-        super(data.id, data.cDate, data.ufirst, data.ulast);
-        email = data.email;
-        username = data.username;
+        super(data.id, data.cDate, data.uRealName, data.uUserName, data.uEmail);
+        uPassword = data.uPassword;
+        uSalt = data.uSalt;
     }
 }

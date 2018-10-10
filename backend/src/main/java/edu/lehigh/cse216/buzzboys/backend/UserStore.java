@@ -5,30 +5,25 @@ import java.util.ArrayList;
 
 
 public class UserStore extends DataStore<UserLite, User> {
-    /**
-     * Constructor to build operations for userstore
-     * @param ip
-     * @param port
-     * @param user
-     * @param pass
-     */
+    
     public UserStore() {
         super();
     }
 
     /**
-     * Create a new user and insert
-     * @param first
-     * @param last
-     * @param user
-     * @param mail
-     * @return
+     * Inserts a user into the database
+     * @param realname
+     * @param username
+     * @param email
+     * @param password
+     * @param salt
+     * @return The id of the user just entered, or -1 if the insert was unsuccessful
      */
-    public synchronized int createEntry(String first, String last, String user, String mail) {
-        System.out.println(first + last + user + mail);
-        if(first == null || last == null || user == null)
+    public synchronized int createEntry(String realname, String username, String email, String password, String salt) {
+        System.out.println(realname + " " + username + " " + email); //don't print out pass or salt
+        if(realname == null || username == null || email == null || password == null || salt == null)
             return -1;
-        return (db.insertUserRow(user, first, last, mail) == -1) ? -1 : counter++;
+        return (db.insertUserRow(realname, username, email, password, salt) == -1) ? -1 : counter++;
     }
 
     /**
@@ -50,20 +45,20 @@ public class UserStore extends DataStore<UserLite, User> {
     }
 
     /**
-     * Update a whole user profile, but add functionality to update one each if data is null
-     * Or just make separate methods
+     * Update the user with the given id
      * @param id
+     * @param realname
      * @param username
-     * @param firstname
-     * @param lastname
      * @param email
-     * @return
+     * @param password
+     * @param salt
+     * @return The updated user object, or null if the update failed 
      */
-    public synchronized User updateOne(int id, String username, String firstname, String lastname, String email) {
-        System.out.println(id + username + firstname + lastname + email);
-        if(readOne(id) == null || username == null || firstname == null || lastname == null)
+    public synchronized User updateOne(int id, String realname, String username, String email, String password, String salt) {
+        System.out.println(id + " " + username +  " " + realname + " " + email);
+        if(readOne(id) == null || username == null || realname == null || password == null || salt == null)
             return null;
-        return (db.updateOneUser(id, username, firstname, lastname, email) == -1) ? null : new User(db.selectOneUser(id));
+        return (db.updateOneUser(id, realname, username, email, password, salt) == -1) ? null : new User(db.selectOneUser(id));
     }
 
     /**

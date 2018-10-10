@@ -6,26 +6,26 @@ import java.util.Date;
  * It is a superclass of user because of the less amounts of elements
  */
 public class UserLite extends Row {
-    /**
-     * First name of the user
-     */
-    String ufirst;
+    
+    
+    String uRealName;
+    
+    String uUserName;
 
-    /**
-     * Last name of the user
-     */
-    String ulast;
+    String uEmail;
 
     
-    public UserLite(int id, Date date, String first, String last) {
+    public UserLite(int id, Date date, String real, String user, String email) {
         super(id, date);
-        ufirst = first;
-        ulast = last;
+        uRealName = real;
+        uUserName = user;
+        uEmail = email;
     }
 
     public UserLite(UserLite data) {
         super(data.id, data.cDate);
-        ufirst = data.ufirst;
-        ulast = data.ulast;
+        uRealName = data.uRealName;
+        uUserName = data.uUserName;
+        uEmail = data.uEmail;
     }
 }
