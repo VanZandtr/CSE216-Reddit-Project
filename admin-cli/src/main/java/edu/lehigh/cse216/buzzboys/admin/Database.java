@@ -30,6 +30,7 @@ public class Database {
     private PreparedStatement mUpdateOneUser;
     private PreparedStatement mCreateMessageTable;       
     private PreparedStatement mCreateUserTable;
+    private PreparedStatement mCreateCommentTable;
     private PreparedStatement mSelectOneMessage;
     private PreparedStatement mSelectOneUser;
     private PreparedStatement mCreateVoteTable;
@@ -190,16 +191,18 @@ public class Database {
 
             //Create Tables
             db.mCreateMessageTable = db.mConnection.prepareStatement(
-                    "CREATE TABLE messages (id SERIAL PRIMARY KEY, subject VARCHAR(50) " + "NOT NULL, message VARCHAR(500) NOT NULL," + "username VARCHAR(20) NOT NULL," + "upvotes INT NOT NULL," + " downvotes INT NOT NULL)");//added
+                    "CREATE TABLE msg (mid SERIAL PRIMARY KEY, title VARCHAR(50) " + "NOT NULL, body VARCHAR(140) NOT NULL," + "uid INTEGER NOT NULL," + "date_created DATETIME," + "last_updated DATETIME" + "upvotes INTEGER NOT NULL," + " downvotes INTEGER NOT NULL)");//added
             db.mCreateUserTable = db.mConnection.prepareStatement(
-                    "CREATE TABLE users(id SERIAL PRIMARY KEY, username VARCHAR(20) " + "NOT NULL, firstname VARCHAR(50)," + "lastname VARCHAR(50)," + "email VARCHAR(100))");
+                    "CREATE TABLE user(uid SERIAL PRIMARY KEY, username VARCHAR(20) " + "NOT NULL, realname VARCHAR(255)," + "email VARCHAR(100),"+"salt BYTEA,"+"password BYTEA)");
             db.mCreateVoteTable = db.mConnection.prepareStatement(
-                    "CREATE TABLE votes (id SERIAL PRIMARY KEY, message_id INT " + "NOT NULL, username VARCHAR(20) NOT NULL," + "is_upvote INT NOT NULL)");
+                    "CREATE TABLE vote (vid SERIAL PRIMARY KEY, mid INTEGER " + "NOT NULL, uid INTEGER NOT NULL," + "is_upvote INT NOT NULL)");
+            db.mCreateCommentTable = db.mConnection.prepareStatement(
+                    "CREATE TABLE com (cid SERIAL PRIMARY KEY, uid INTEGER NOT NULL, mid INTEGER NOT NULL, content VARCHAR(140), date_created DATETIME)");
 
             //Drop Tables                    
-            db.mDropUsersTable = db.mConnection.prepareStatement("DROP TABLE users");
-            db.mDropMessagesTable = db.mConnection.prepareStatement("DROP TABLE messages");
-            db.mDropVotesTable = db.mConnection.prepareStatement("DROP TABLE votes");
+            db.mDropUsersTable = db.mConnection.prepareStatement("DROP TABLE user");
+            db.mDropMessagesTable = db.mConnection.prepareStatement("DROP TABLE msg");
+            db.mDropVotesTable = db.mConnection.prepareStatement("DROP TABLE vote");
 
             // Standard CRUD operations
             db.mDeleteOneMessage = db.mConnection.prepareStatement("DELETE FROM messages WHERE id = ?");
