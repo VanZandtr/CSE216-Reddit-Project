@@ -1,6 +1,7 @@
 package edu.lehigh.cse216.buzzboys.backend;
 
 import java.util.LinkedHashMap;
+import java.util.Collections;
 
 /**
  * This class handles all data/logic for keeping track of user sessions.
@@ -20,7 +21,7 @@ public class Session {
      */
     private static LinkedHashMap<String, String> getTokenMap() {
         if (tokenMap == null)
-            tokenMap = new LinkedHashMap<String, String>();
+            tokenMap = (LinkedHashMap<String, String>) Collections.synchronizedMap(new LinkedHashMap<String, String>());
         return tokenMap;
     }
 
