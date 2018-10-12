@@ -39,4 +39,6 @@ public class User extends UserLite {
         uPassword = data.uPassword;
         uSalt = data.uSalt;
     }
+
+    public User() {}
 }

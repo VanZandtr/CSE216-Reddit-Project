@@ -188,6 +188,8 @@ public class Database {
             db.mSelectVoteByUsername = db.mConnection.prepareStatement("SELECT * from votes WHERE username = ?");
             db.mUpdateOneVote = db.mConnection.prepareStatement("UPDATE votes SET is_upvote = ? WHERE message_id = ? AND username = ?"); //add method
 
+            
+
 
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement");
@@ -388,6 +390,48 @@ public class Database {
         }
         return res;
     }
+
+    /**
+     * 
+     * @param user - A user object with some non-null properties.
+     * @return A user object, equal on the properties of the user passed in, and with all properties non null
+     */
+    User selectUser(User user) {
+        User res = null;
+        try {
+            String query = "SELECT * from users WHERE ";
+            boolean addAnd = false;
+            boolean email, realname, username;
+            email = realname = username = false;
+            if (user.uEmail != null) {
+                query += "email = ?";
+                addAnd = true;
+            }
+            if (user.uRealName == null) {
+                if (addAnd) query += ", ";
+                query += "realname = ?";
+            }
+            if (user.uUserName == null) {
+                if (addAnd) query += ", ";
+                query += "username = ?";
+            }
+            PreparedStatement getUser = db.mConnection.prepareStatement(query);
+            int index = 1;
+            if (email) getUser.setString(index++, user.uEmail);
+            if (realname) getUser.setString(index++, user.uRealName);
+            if (username) getUser.setString(index++, user.uUserName);
+            ResultSet rs = getUser.executeQuery();
+            if (rs.next())
+                //int id, Date date, String real, String user, String email, byte[] pass, byte[] salt
+                res = new User(rs.getInt("id"), new Date(rs.getTimestamp("date_created").getTime()), rs.getString("realname"), rs.getString("username"), rs.getString("email"), rs.getBytes("password"), rs.getBytes("salt"));//added
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
+
 
     /**
      * Delete a row by ID

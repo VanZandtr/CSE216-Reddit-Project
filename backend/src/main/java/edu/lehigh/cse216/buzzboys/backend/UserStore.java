@@ -41,6 +41,17 @@ public class UserStore extends DataStore<UserLite, UserLite> {
     }
 
     /**
+     * 
+     * @param user - A user object with some non-null properties.
+     * @return A user object from the database, equal on the properties of the user passed in. 
+     */
+    public synchronized User readOne(User user) {
+        if (user == null) 
+            return null;
+        return db.selectUser(user);
+    }
+
+    /**
      * Get all users with limited data
      */
     @Override
@@ -76,4 +87,5 @@ public class UserStore extends DataStore<UserLite, UserLite> {
     public synchronized boolean deleteOne(int id) {
         return (readOne(id) == null) ? false : (db.deleteUserRow(id) == -1) ? false : true;
     }
+
 }

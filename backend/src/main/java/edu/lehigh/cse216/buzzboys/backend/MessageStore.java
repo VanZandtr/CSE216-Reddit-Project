@@ -1,7 +1,7 @@
 package edu.lehigh.cse216.buzzboys.backend;
 
 import java.util.List;
-import java.util.ArrayList;;
+import java.util.ArrayList;
 
 import java.util.Date;
 

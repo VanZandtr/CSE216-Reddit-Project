@@ -6,6 +6,9 @@ import spark.Spark;
 
 // Import Google's JSON library
 import com.google.gson.*;
+
+import java.security.SecureRandom;
+import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -259,6 +262,31 @@ public class App {
             }
         });
 
+        Spark.post("/users/login", (request, response) -> {
+            
+            UserLoginReq req = gson.fromJson(request.body(), UserLoginReq.class);
+            String email = req.email;
+            User u = new User();
+            u.uEmail = email;
+            User foundUser = store.user.readOne(u);
+            byte[] salt = foundUser.uSalt;
+            byte[] hashedPass = Security.hashPassword(req.password, salt);
+            if (Arrays.equals(foundUser.uPassword, hashedPass))
+            {
+                response.status(200);
+                response.type("application/json");
+                SecureRandom random = new SecureRandom();
+                byte[] bytes = new byte[20];
+                random.nextBytes(bytes);
+                String token = bytes.toString();
+                Session.Login(foundUser.uUserName, token);
+                return gson.toJson(new StructuredResponse("OK", null, token));
+            }
+            response.status(401);
+            response.type("application/json");
+            return gson.toJson(new StructuredResponse("Error", "Authentication Failed", null));
+
+        });
 
         // GET route that returns every message for a userId.
         // The ":id" suffix in the first parameter to get() becomes 

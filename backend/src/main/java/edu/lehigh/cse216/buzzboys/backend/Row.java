@@ -11,12 +11,14 @@ public abstract class Row {
     /**
      * Every row needs an id
      */
-    public final int id;
+    public int id;
 
     /**
      * Every row needs a created date
      */
-    public final Date cDate;
+    public Date cDate;
+
+    public Row() {}
 
     /**
      * Constructor for a Row
