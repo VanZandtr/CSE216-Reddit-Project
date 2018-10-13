@@ -102,7 +102,7 @@ public class MessageStore extends DataStore<MessageLite, Message> {
     /**
      * Update the downvotes of the message
      * @param id
-     * @param i - the number to increase/decrease the downvote  count by
+     * @param i - the number to increase/decrease the downvote count by
      * @return
      */
     public synchronized boolean updateDownvote(int id, int i) {

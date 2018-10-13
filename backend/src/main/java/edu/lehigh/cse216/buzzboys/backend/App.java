@@ -381,7 +381,35 @@ public class App {
                 return gson.toJson(new StructuredResponse("ok", null, null));
             }
         });
+        
 
+        Spark.get("/message/:id/comments", (request, response) -> {
+            response.status(200);
+            response.type("application/json");
+            int msgId = Integer.parseInt(request.params("id"));
+            return gson.toJson(new StructuredResponse("ok", null, store.comment.readAllWithMessageId(msgId)));
+        });
+
+        Spark.post("/message/:id/comments", (request, response) -> {
+            response.type("application/json");
+            
+            String token = gson.fromJson(request.body(), DefaultReq.class).userToken;
+            String username = Session.getUsername(token);
+            User user = new User();
+            user.uUserName = username;
+            user = store.user.readOneWithProperties(user);
+            int userId = user.id;
+            int msgId = Integer.parseInt(request.params("id"));
+
+            CommentReq req = gson.fromJson(request.body(), CommentReq.class);
+            int newId = store.comment.createEntry(userId, msgId, req.content);
+            if (newId == -1) {
+                response.status(500);
+                return gson.toJson(new StructuredResponse("error", "error performing insertion", null));
+            } else {
+                return gson.toJson(new StructuredResponse("ok", "" + newId, null));
+            }
+        });
     }
 
     /**

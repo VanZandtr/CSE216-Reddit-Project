@@ -7,14 +7,13 @@ import java.util.Date;
  */
 public class UserLite extends Row {
     
-    
     String uRealName;
-    
     String uUserName;
-
     String uEmail;
 
-    public UserLite() {}
+    public UserLite() {
+
+    }
 
     public UserLite(int id, Date date, String real, String user, String email) {
         super(id, date);

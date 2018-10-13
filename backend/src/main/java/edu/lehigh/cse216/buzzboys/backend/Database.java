@@ -48,6 +48,11 @@ public class Database {
     private PreparedStatement mSelectVotesByMessageID;
     private PreparedStatement mSelectVoteByUsername;
 
+    //Comments
+    private PreparedStatement mSelectOneComment;
+    private PreparedStatement mSelectAllFromComments;
+    private PreparedStatement mSelectCommentsWithMessageId; 
+
     /**
      * Inserting rows
      */
@@ -59,6 +64,9 @@ public class Database {
 
     //Votes
     private PreparedStatement mInsertVote;
+
+    //Comments
+    private PreparedStatement mInsertOneComment;
 
     /**
      * Updating rows
@@ -87,6 +95,9 @@ public class Database {
 
      //Rows
      private PreparedStatement mDeleteOneVote;
+
+     //Comments
+     private PreparedStatement mDeleteOneComment;
     
     /**
      * Create table statements
@@ -164,23 +175,32 @@ public class Database {
             db.mDropUsersTable = db.mConnection.prepareStatement("DROP TABLE users");
             db.mDropMessagesTable = db.mConnection.prepareStatement("DROP TABLE messages");
             db.mDropVotesTable = db.mConnection.prepareStatement("DROP TABLE votes");
+            
             // Standard CRUD operations
             db.mDeleteOneMessage = db.mConnection.prepareStatement("DELETE FROM messages WHERE id = ?");
             db.mDeleteOneUser = db.mConnection.prepareStatement("DELETE FROM users WHERE id = ?");
             db.mDeleteOneVote = db.mConnection.prepareStatement("DELETE FROM votes WHERE id = ?");
+            db.mDeleteOneComment = db.mConnection.prepareStatement("DELETE FROM com WHERE id = ?");
 
             db.mInsertOneMessage = db.mConnection.prepareStatement("INSERT INTO messages VALUES (default, ?, ?, ?, ?, ?, ?, ?)");//added 2 ?'s'
             db.mInsertOneUser = db.mConnection.prepareStatement("INSERT INTO users VALUES (default, ?, ?, ?, ?, ?)");//added 2
             db.mInsertVote = db.mConnection.prepareStatement("INSERT INTO votes VALUES (default, ?, ?, ?, ?)");
+            db.mInsertOneComment = db.mConnection.prepareStatement("INSERT INTO com VALUES (default, ?, ?, ?, ?)");
+
             db.mSelectAllFromMessages = db.mConnection.prepareStatement("SELECT * FROM messages");//added
             db.mSelectAllFromUsers = db.mConnection.prepareStatement("SELECT * FROM users");//added
+            db.mSelectAllFromComments = db.mConnection.prepareStatement("SELECT * FROM com");//added
+            
             db.mSelectOneMessage = db.mConnection.prepareStatement("SELECT * from messages WHERE id = ?");
             db.mSelectOneUser = db.mConnection.prepareStatement("SELECT * from users WHERE id = ?");
+            db.mSelectOneComment = db.mConnection.prepareCall("SELECT * from com WHERE id = ?");
+            
             db.mUpdateOneMessage = db.mConnection.prepareStatement("UPDATE messages SET title = ? message = ?, last_updated = ? WHERE id = ?");
             //Add functionality to update one field each
             db.mUpdateOneUser = db.mConnection.prepareStatement("UPDATE users SET username = ?, realname = ?, email = ?, password = ?, salt = ? WHERE uid = ?");
             db.mUpdateOneMessageUp = db.mConnection.prepareStatement("UPDATE messages SET upvotes = ? WHERE id = ?");
             db.mUpdateOneMessageDown = db.mConnection.prepareStatement("UPDATE messages SET downvotes = ? WHERE id = ?");
+            
             db.mSelectOneVote = db.mConnection.prepareStatement("SELECT * from votes WHERE id=?");
             db.mSelectAllFromVotes= db.mConnection.prepareStatement("SELECT * FROM votes");//added
             db.mSelectVoteByMessageAndUsername = db.mConnection.prepareStatement("SELECT * from votes WHERE message_id = ? AND username = ?");
@@ -188,8 +208,7 @@ public class Database {
             db.mSelectVoteByUsername = db.mConnection.prepareStatement("SELECT * from votes WHERE username = ?");
             db.mUpdateOneVote = db.mConnection.prepareStatement("UPDATE votes SET is_upvote = ? WHERE message_id = ? AND username = ?"); //add method
 
-            
-
+            db.mSelectCommentsWithMessageId = db.mConnection.prepareStatement("SELECT * from com WHERE mid = ?");
 
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement");
@@ -679,6 +698,74 @@ public class Database {
         return res;
     }
 
+    Comment selectOneComment(int id) {
+        Comment res = null;
+        try {
+            mSelectOneComment.setInt(1, id);
+            ResultSet rs = mSelectOneComment.executeQuery();
+            if (rs.next()) {
+                res = new Comment(rs.getInt("id"), new Date(rs.getTimestamp("date_created").getTime()), rs.getInt("uid"), rs.getInt("mid"), rs.getString("content"));
+            }
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
+    List<Comment> selectAllFromComments() {
+        List<Comment> comments = new ArrayList<Comment>();
+        try {
+            ResultSet rs = mSelectAllFromComments.executeQuery();
+            while (rs.next()) {
+                comments.add(new Comment(rs.getInt("id"), new Date(rs.getTimestamp("date_created").getTime()), rs.getInt("uid"), rs.getInt("mid"), rs.getString("content")));
+            }
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return comments;
+    }
+
+    List<Comment> selectCommentsWithMessageId(int msgId) {
+        List<Comment> comments = new ArrayList<Comment>();
+        try {
+            mSelectCommentsWithMessageId.setInt(1, msgId);
+            ResultSet rs = mSelectCommentsWithMessageId.executeQuery();
+            while (rs.next()) {
+                comments.add(new Comment(rs.getInt("id"), new Date(rs.getTimestamp("date_created").getTime()), rs.getInt("uid"), rs.getInt("mid"), rs.getString("content")));
+            }
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return comments;
+    }
+
+    int deleteCommentRow(int id) {
+        int res = -1;
+        try {
+            mDeleteOneComment.setInt(1, id);
+            res = mDeleteOneComment.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
+    int insertCommentRow(int uid, int mid, String content) {
+        int count = 0;
+        try {
+            mInsertOneComment.setInt(1, uid);
+            mInsertOneComment.setInt(2, mid);
+            mInsertOneComment.setString(3, content); //added
+            mInsertOneComment.setTimestamp(4, new Timestamp(new Date().getTime()));
+            count += mInsertOneMessage.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return count;
+    }
 
     /**
      * Create user table.  If it already exists, this will print an error
