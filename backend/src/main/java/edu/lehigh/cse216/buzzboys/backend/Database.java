@@ -396,7 +396,7 @@ public class Database {
      * @param user - A user object with some non-null properties.
      * @return A user object, equal on the properties of the user passed in, and with all properties non null
      */
-    User selectUser(User user) {
+    User selectUserWithProperties(User user) {
         User res = null;
         try {
             String query = "SELECT * from users WHERE ";
@@ -484,10 +484,10 @@ public class Database {
         return res;
     }
 
-    int updateOneMessageUp(int id) {
+    int updateOneMessageUp(int id, int i) {
         int res = -1;
         try {
-            mUpdateOneMessageUp.setInt(1, getUpvotes(id)+1);
+            mUpdateOneMessageUp.setInt(1, getUpvotes(id)+i);
             mUpdateOneMessageUp.setInt(2, id);
             res = mUpdateOneMessageUp.executeUpdate();
         } catch (SQLException e) {
@@ -496,10 +496,10 @@ public class Database {
         return res;
     }
 
-    int updateOneMessageDown(int id) {
+    int updateOneMessageDown(int id, int i) {
         int res = -1;
         try {
-            mUpdateOneMessageDown.setInt(1, getDownvotes(id)+1);
+            mUpdateOneMessageDown.setInt(1, getDownvotes(id)+i);
             mUpdateOneMessageDown.setInt(2, id);
             res = mUpdateOneMessageDown.executeUpdate();
         } catch (SQLException e) {

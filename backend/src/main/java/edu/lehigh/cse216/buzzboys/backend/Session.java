@@ -19,7 +19,7 @@ public class Session {
      * Get the tokenmap, initializing it first if null.
      * @return The TokenMap 
      */
-    private static LinkedHashMap<String, String> getTokenMap() {
+    private static synchronized LinkedHashMap<String, String> getTokenMap() {
         if (tokenMap == null)
             tokenMap = (LinkedHashMap<String, String>) Collections.synchronizedMap(new LinkedHashMap<String, String>());
         return tokenMap;
@@ -28,7 +28,7 @@ public class Session {
     /**
      * Log a user in by associating the string token with the username.
      */
-    public static void Login(String username, String token) {
+    public static synchronized void Login(String username, String token) {
         LinkedHashMap<String, String> map = getTokenMap();
         if (map.containsValue(username))
             map.values().remove(username);
@@ -38,8 +38,12 @@ public class Session {
     /**
      * Log out a given user by removing the token-username pair from tokenMap.
      */
-    public static void Logout(String token) {
+    public static synchronized void Logout(String token) {
         if (getTokenMap().containsKey(token)) 
             getTokenMap().remove(token);
+    }
+
+    public static synchronized String getUsername(String token) {
+        return getTokenMap().get(token);
     }
 }

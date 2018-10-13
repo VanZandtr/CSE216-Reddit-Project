@@ -45,10 +45,10 @@ public class UserStore extends DataStore<UserLite, UserLite> {
      * @param user - A user object with some non-null properties.
      * @return A user object from the database, equal on the properties of the user passed in. 
      */
-    public synchronized User readOne(User user) {
+    public synchronized User readOneWithProperties(User user) {
         if (user == null) 
             return null;
-        return db.selectUser(user);
+        return db.selectUserWithProperties(user);
     }
 
     /**

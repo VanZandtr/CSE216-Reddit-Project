@@ -7,6 +7,10 @@ import spark.Spark;
 // Import Google's JSON library
 import com.google.gson.*;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpOptions;
+import org.apache.http.protocol.HTTP;
+
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Map;
@@ -79,6 +83,7 @@ public class App {
         // return it.  If there's no data, we return "[]", so there's no need 
         // for error handling.
         Spark.get("/messages", (request, response) -> {
+            
             // ensure status 200 OK, with a MIME type of JSON
             MessageLite req = gson.fromJson(request.body(), MessageLite.class);
             response.status(200);
@@ -268,7 +273,7 @@ public class App {
             String email = req.email;
             User u = new User();
             u.uEmail = email;
-            User foundUser = store.user.readOne(u);
+            User foundUser = store.user.readOneWithProperties(u);
             byte[] salt = foundUser.uSalt;
             byte[] hashedPass = Security.hashPassword(req.password, salt);
             if (Arrays.equals(foundUser.uPassword, hashedPass))
@@ -313,30 +318,66 @@ public class App {
 
         Spark.put("/messages/:id/upvote", (request, response) -> {
             int idx = Integer.parseInt(request.params("id"));
-            // ensure status 200 OK, with a MIME type of JSON
-            response.status(200);
-            response.type("application/json");
             
-            Boolean data = store.msg.updateUpvote(idx);
-            //you need to add the votes table functionality, queries with joins need to be made and methods implemented
+            response.type("application/json");
+            String token = gson.fromJson(request.body(), DefaultReq.class).userToken;
+            String username = Session.getUsername(token);
+
+            //Check to see if the user already voted
+            int msgId = Integer.parseInt(request.params("id"));
+            Vote existingVote = store.vote.readVoteByMessageAndUsername(msgId, username);
+            
+            if (existingVote != null) {
+                if (existingVote.is_upvote == 1) {
+                    //do nothing
+                    response.status(304);
+                    return gson.toJson(new StructuredResponse("ok", "Not Updated", null));
+                }
+                else if (existingVote.is_upvote == 0) {
+                    store.vote.deleteOne(existingVote.id);
+                    store.msg.updateDownvote(msgId, -1);
+                }
+            }
+            int result = store.vote.createEntry(msgId, username, 1);
+            Boolean data = store.msg.updateUpvote(idx, 1);
             if (!data) {
+                response.status(304);
                 return gson.toJson(new StructuredResponse("error", idx + "not found or updated failed", null));
             } else {
+                response.status(200);
                 return gson.toJson(new StructuredResponse("ok", null, null));
             }
         });
 
         Spark.put("/messages/:id/downvote", (request, response) -> {
             int idx = Integer.parseInt(request.params("id"));
-            // ensure status 200 OK, with a MIME type of JSON
-            response.status(200);
-            response.type("application/json");
             
-            boolean data = store.msg.updateDownvote(idx);
-            //you need to add the votes table functionality, queries with joins need to be made and methods implemented
+            response.type("application/json");
+            String token = gson.fromJson(request.body(), DefaultReq.class).userToken;
+            String username = Session.getUsername(token);
+
+            //Check to see if the user already voted
+            int msgId = Integer.parseInt(request.params("id"));
+            Vote existingVote = store.vote.readVoteByMessageAndUsername(msgId, username);
+            
+            if (existingVote != null) {
+                if (existingVote.is_upvote == 0) {
+                    //do nothing
+                    response.status(304);
+                    return gson.toJson(new StructuredResponse("ok", "Not Updated", null));
+                }
+                else if (existingVote.is_upvote == 1) {
+                    store.vote.deleteOne(existingVote.id);
+                    store.msg.updateUpvote(msgId, -1);
+                }
+            }
+            int result = store.vote.createEntry(msgId, username, 0);
+            Boolean data = store.msg.updateDownvote(idx, 1);
             if (!data) {
-                return gson.toJson(new StructuredResponse("error", idx + " not found or update failed", null));
+                response.status(304);
+                return gson.toJson(new StructuredResponse("error", idx + "not found or updated failed", null));
             } else {
+                response.status(200);
                 return gson.toJson(new StructuredResponse("ok", null, null));
             }
         });
