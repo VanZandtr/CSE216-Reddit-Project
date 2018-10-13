@@ -1,0 +1,43 @@
+<resources>
+    <string name="app_name">TheBuzz</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_create_message">CreateMessage</string>
+    <string name="title_activity_login">Sign in</string>
+
+    <!-- Strings related to login -->
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password (optional)</string>
+    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="error_invalid_email">This email address is invalid</string>
+    <string name="error_invalid_password">This password is too short</string>
+    <string name="error_incorrect_password">This password is incorrect</string>
+    <string name="error_field_required">This field is required</string>
+    <string name="permission_rationale">"Contacts permissions are needed for providing email
+        completions."
+    </string>
+    <string name="action_sign_in_cancel">Cancel</string>
+    <string name="upvote">Upvote</string>
+    <string name="downvote">Downvote</string>
+    <string name="comments">comments</string>
+    <string name="comment">comment</string>
+
+    <string name="commentbox">comment</string>
+
+    <string name="createCommentActivityButton">Comment</string>
+
+
+
+    <!-- Strings for login/register activity -->
+    <string name="hint_password"></string>
+    <string name="login_input_email"></string>
+    <string name="login_input_password"></string>
+    <string name="hint_email"></string>
+    <string name="btn_login">Login</string>
+    <string name="btn_link_signup">Signup</string>
+    <string name="btn_sign_up">Signup</string>
+    <string name="btn_link_login">Login</string>
+    <string name="title_activity_show_comments">ShowCommentsActivity</string>
+
+
+</resources>
