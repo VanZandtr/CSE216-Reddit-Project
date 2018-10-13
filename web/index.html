@@ -1,25 +1,39 @@
 <html>
-
 <head>
     <link rel="stylesheet" href="app.css">
-    <script src="app.js"></script>
     <script src="jquery.min.js"></script>
     <title>The Buzz</title>
 </head>
-
 <body>
+    <script src="app.js"></script>
+
+  <div id="loginContainer">
+    <label for="uname"><b>Username</b></label>
+    <input type="text" placeholder="Username" id="uname" required>
+
+    <label for="psw"><b>Password</b></label>
+    <input type="password" placeholder="Password" id="psw" required>
+
+    <input type="button" id="loginButton" value="Login" />
+  </div>
+
+<div id="mainBoard">
     <div id="addElement">
-        <h3>New Entry</h3>
-        <label>Message</label>
-        <textarea id="newMessage"></textarea>
+        <h3>New Post</h3>
+	<input type="text" size="45" id="newTitle" placeholder="Title">
+	<br><textarea rows="4" cols="60" id="newMessage" placeholder="Message"></textarea>
         <button id="addButton">Add</button>
         <button id="addCancel">Cancel</button>
     </div>
     <div id="showElements">
-        <h3>All Messages</h3>
-        <button id="showFormButton">Add Message</button>
-        <div id="messageList"></div>
+        <h3>All Posts</h3>
+	<div id="messageList"></div>
     </div>
+</div>
+	<div id="userprofile">
+	<div id="userDeets"></div>
+	<input type="button" id="returnUP" value="Return" />
+	</div>
 </body>
-
 </html>
+

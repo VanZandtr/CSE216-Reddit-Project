@@ -11,6 +11,7 @@ The following files have been resolved:
    org.eclipse.jetty:jetty-io:jar:9.4.8.v20171121:compile
    org.apache.velocity:velocity-tools:jar:2.0:compile
    org.apache.struts:struts-tiles:jar:1.3.8:compile
+   org.postgresql:postgresql:jar:42.2.5:compile
    org.apache.maven.reporting:maven-reporting-api:jar:3.0:compile
    org.objenesis:objenesis:jar:2.6:compile
    org.apache.maven.plugins:maven-dependency-plugin:jar:3.0.2:compile
@@ -86,7 +87,6 @@ The following files have been resolved:
    com.jcraft:jsch:jar:0.1.53:compile
    commons-io:commons-io:jar:2.6:compile
    org.slf4j:slf4j-simple:jar:1.7.22:compile
-   org.postgresql:postgresql:jar:42.1.1:compile
    org.codehaus.plexus:plexus-component-annotations:jar:1.7.1:compile
    com.heroku.sdk:heroku-deploy:jar:2.0.2:compile
    org.apache.velocity:velocity:jar:1.5:compile

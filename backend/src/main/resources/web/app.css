@@ -1,0 +1,7 @@
+body {
+	font-family: "DejaVu Sans Mono", cursice, monospace;
+}
+button.link{background:none; border:none; }
+button.upvote{background:none; border:none; }
+button.downvote{background:none; border:none; }
+button.comment{background:none; border:none; }
