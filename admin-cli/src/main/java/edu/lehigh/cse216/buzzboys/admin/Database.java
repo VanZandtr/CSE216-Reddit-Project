@@ -39,11 +39,19 @@ public class Database {
     private PreparedStatement mSelectAllFromVotes;
     private PreparedStatement mselectVotesByMessageIDUserID;
     private PreparedStatement mselectVotesByMessageID;
+	private PreparedStatement mCreateCommentTable;
     private PreparedStatement mDeleteOneMessage;
     private PreparedStatement mDeleteOneUser;
     private PreparedStatement mDropMessagesTable;
     private PreparedStatement mDropUsersTable;
     private PreparedStatement mDropVotesTable;
+	private PreparedStatement mDropCommentTable;
+	private PreparedStatement mInsertOneComment;
+	private PreparedStatement mDeleteOneComment;
+	private PreparedStatement mSelectCommentByMessageId;
+	private PreparedStatement mSelectCommentByMessageIdUserID;
+	private PreparedStatement mSelectAllFromComments;
+
 
     /**
      * Added a global username variable in order to retain Heroku's username
@@ -107,6 +115,19 @@ public class Database {
         }
     }
 
+	public static class CommentRowData{
+		int mId;
+		int mMid;
+		int mUid;
+		String mText;
+
+		public CommentRowData(int id, int mid, int uid, String text){
+			mId=id;
+			mMid=mid;
+			mUid=uid;
+			mText=text;
+		}
+	}
 
 
 
@@ -195,16 +216,22 @@ public class Database {
                     "CREATE TABLE users(id SERIAL PRIMARY KEY, username VARCHAR(20) " + "NOT NULL, firstname VARCHAR(50)," + "lastname VARCHAR(50)," + "email VARCHAR(100))");
             db.mCreateVoteTable = db.mConnection.prepareStatement(
                     "CREATE TABLE votes (id SERIAL PRIMARY KEY, message_id INT " + "NOT NULL, username VARCHAR(20) NOT NULL," + "is_upvote INT NOT NULL)");
+			db.mCreateCommentTable = db.mConnection.prepareStatement(
+                    "CREATE TABLE comments (id SERIAL PRIMARY KEY, message_id INT " + "NOT NULL, uid INTEGER NOT NULL," + "text VARCHAR(140)" +"date_created DATETIME,"
+					+"last_updated DATETIME)");
 
             //Drop Tables                    
             db.mDropUsersTable = db.mConnection.prepareStatement("DROP TABLE users");
             db.mDropMessagesTable = db.mConnection.prepareStatement("DROP TABLE messages");
             db.mDropVotesTable = db.mConnection.prepareStatement("DROP TABLE votes");
+	    db.mDropCommentTable = db.mConnection.prepareStatement("DROP TABLE comments");
 
             // Standard CRUD operations
             db.mDeleteOneMessage = db.mConnection.prepareStatement("DELETE FROM messages WHERE id = ?");
             db.mDeleteOneUser = db.mConnection.prepareStatement("DELETE FROM users WHERE id = ?");
+			db.mDeleteOneComment = db.mConnection.prepareStatement("DELETE FROM comments WHERE id=?");
             db.mInsertOneMessage = db.mConnection.prepareStatement("INSERT INTO messages VALUES (default, ?, ?, ?, ?, ?)");
+			db.mInsertOneComment = db.mConnection.prepareStatement("INSERT INTO comments VALUES (default, ?, ?, ?, GETDATE(), GETDATE())")
             db.mInsertOneUser = db.mConnection.prepareStatement("INSERT INTO users VALUES (default, ?, ?, ?, ?)");
             db.mSelectAllFromMessages = db.mConnection.prepareStatement("SELECT id, subject, username, upvotes, downvotes FROM messages");
             db.mSelectAllFromUsers = db.mConnection.prepareStatement("SELECT id, username, firstname, lastname, email FROM users");
@@ -218,8 +245,11 @@ public class Database {
             db.mDeleteVote = db.mConnection.prepareStatement("DELETE FROM votes WHERE id = ?");
             db.mSelectOneVote = db.mConnection.prepareStatement("SELECT * from votes WHERE id=?");
             db.mSelectAllFromVotes= db.mConnection.prepareStatement("SELECT id, message_id, username, is_upvote FROM votes");//added
+			db.mSelectAllFromComments= db.mConnection.prepareStatement("SELECT id, message_id, uid, text, date_created, last_updated FROM comments");
             db.mselectVotesByMessageIDUserID = db.mConnection.prepareStatement("SELECT * from votes WHERE message_id = ? AND username = ?");
+			db.mSelectCommentByMessageIdUserID = db.mConnection.prepareStatement("SELECT * FROM comments WHERE message_id = ? AND uid = ?");
             db.mselectVotesByMessageID = db.mConnection.prepareStatement("SELECT * from votes WHERE message_id = ?");
+			db.mSelectCommentByMessageId = db.mConnection.prepareStatement("SELECT * from comments WHERE message_id=?");
 
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement");
@@ -276,6 +306,17 @@ public class Database {
         }
         return count;
     }
+
+	int insertCommentRow(int mid, int uid, String text){
+		int count = 0;
+		try{
+			mInsertOneComment.setInt(1,mid);
+			mInsertOneComment.setInt(2,uid);
+			mInsertOneComment.setString(3,text);
+		} catch (SQLException e){
+			e.printStackTrace();
+		}
+	}
 
     /**
      *  insert new user
@@ -583,6 +624,22 @@ public class Database {
         return res;
     }
 
+
+	CommentRowData selectCommentsByMessageIdUserId(int mid, int uid){
+		CommentRowData res = null;
+		try{
+			mSelectCommentByMessageIdUserID.setInt(1,mid);
+			mSelectCommentByMessageIdUserID.setInt(2,uid);
+			ResultSet rs = mSelectCommentByMessageIdUserID.executeQuery();
+			if(rs.next()){
+				res=new CommentRowData(rs.getInt("id"), rs.getInt("message_id"), rs.getInt("uid"), rs.getString("text"));
+			}
+		}catch (SQLException e){
+			e.printStackTrace();
+		}
+		return res;
+	}
+
      /**
      * select all votes that a message has 
      * 
@@ -595,6 +652,20 @@ public class Database {
             ResultSet rs = mselectVotesByMessageIDUserID.executeQuery();
             while (rs.next()) {
                 res.add(new VoteRowData(rs.getInt("id"), rs.getInt("message_id"), rs.getString("username"), rs.getInt("is_upvote")));//added
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
+	ArrayList<CommentRowData> selectCommentsByMessageID(int message_id) {
+        ArrayList<CommentRowData> res = new ArrayList<CommentRowData>();
+        try {
+            mSelectCommentByMessageId.setInt(1, message_id);
+            ResultSet rs = mSelectCommentByMessageId.executeQuery();
+            while (rs.next()) {
+                res.add(new VoteRowData(rs.getInt("id"), rs.getInt("message_id"), rs.getInt("uid"), rs.getString("text")));//added
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -637,6 +708,14 @@ public class Database {
         }
     }
 
+	void CreateCommentTable(){
+		try {
+            mCreateCommentTable.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+	}
+
     /**
      * Remove tables from the database.  If it does not exist, this will print
      * an error.
@@ -660,6 +739,14 @@ public class Database {
     void dropMessagesTable() {
         try {
             mDropMessagesTable.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+	}
+
+	void dropCommentTable() {
+        try {
+            mDropCommentTable.execute();
         } catch (SQLException e) {
             e.printStackTrace();
         }
