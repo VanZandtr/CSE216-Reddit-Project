@@ -273,7 +273,7 @@ public class App {
 
         Spark.post("/users/login", (request, response) -> {
             //get user from google request
-            String user = request.user;
+            User user = request.user;
             String idTokenString = request.token.toString;
 
             //make transport and jsonFactory
