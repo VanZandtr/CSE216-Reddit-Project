@@ -14,6 +14,9 @@ import org.apache.http.protocol.HTTP;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Map;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 
 /**
  * For now, our app creates an HTTP server that can only get and add data.
@@ -27,6 +30,7 @@ import java.util.Map;
  * /messages/id/downvote (PUT)		->(action) downvotes a post
  */
 public class App {
+    HashMap <String,String> hashmap = new HashMap<String,String>();//Raymond: Added hashmap to record users and their tokens
     public static void main(String[] args) {
 
         // Get the port on which to listen for requests
@@ -83,7 +87,6 @@ public class App {
         // return it.  If there's no data, we return "[]", so there's no need 
         // for error handling.
         Spark.get("/messages", (request, response) -> {
-            
             // ensure status 200 OK, with a MIME type of JSON
             MessageLite req = gson.fromJson(request.body(), MessageLite.class);
             response.status(200);
@@ -200,10 +203,11 @@ public class App {
             // NB: createEntry checks for null title and message
             byte[] salt = Security.generateSalt();
             byte[] hashedPass = Security.hashPassword(req.password, salt);
-            int newId = store.user.createEntry(req.realName, req.userName, req.email, hashedPass, salt);
+            int newId = store.user.createEntry(req.token, req.realName, req.userName, req.email, hashedPass, salt);//Raymond: Added token string to UserReq
             if (newId == -1) {
                 return gson.toJson(new StructuredResponse("error", "error performing insertion", null));
             } else {
+                hashmap.put(req.userName,req.token); //Raymond: Add the token and the username to the hashmap
                 return gson.toJson(new StructuredResponse("ok", "" + newId, null));
             }
         });
@@ -268,7 +272,55 @@ public class App {
         });
 
         Spark.post("/users/login", (request, response) -> {
-            
+            //get user from google request
+            String user = request.user;
+            String idTokenString = request.token.toString;
+
+            //make transport and jsonFactory
+            //output = new ByteArrayOutputStream();//?
+            //JsonGenerator generator = new JsonFactory().createJsonGenerator(output, JsonEncoding.UTF8);
+
+
+            //verifiy user via google
+            GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), JacksonFactory.getDefaultInstance())
+            // Specify the CLIENT_ID of the app that accesses the backend:
+            .setAudience(Collections.singletonList(CLIENT_ID))
+            // Or, if multiple clients access the backend:
+            //.setAudience(Arrays.asList(CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3))
+            .build();
+
+
+            GoogleIdToken idToken = verifier.verify(idTokenString);
+            if (idToken != null) {
+            Payload payload = idToken.getPayload();
+
+            // Print user identifier
+            String userId = payload.getSubject();
+            System.out.println("User ID: " + userId);
+
+            // Get profile information from payload
+            String email = payload.getEmail();
+            boolean emailVerified = Boolean.valueOf(payload.getEmailVerified());
+            String name = (String) payload.get("name");
+            String pictureUrl = (String) payload.get("picture");
+            String locale = (String) payload.get("locale");
+            String familyName = (String) payload.get("family_name");
+            String givenName = (String) payload.get("given_name");
+
+            // Use or store profile information
+            hashmap.put(user,token);
+
+            } 
+            else {
+                System.out.println("Invalid ID token.");
+                response.status(401);
+                response.type("application/json");
+                return gson.toJson(new StructuredResponse("Error", "Authentication Failed", null));
+            }
+            //possibly return something
+            return idToken;
+    
+            /*
             UserLoginReq req = gson.fromJson(request.body(), UserLoginReq.class);
             String email = req.email;
             User u = new User();
@@ -290,6 +342,7 @@ public class App {
             response.status(401);
             response.type("application/json");
             return gson.toJson(new StructuredResponse("Error", "Authentication Failed", null));
+            */
 
         });
 
