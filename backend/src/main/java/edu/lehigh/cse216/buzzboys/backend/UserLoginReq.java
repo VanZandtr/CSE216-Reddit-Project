@@ -9,4 +9,5 @@ package edu.lehigh.cse216.buzzboys.backend;
 public class UserLoginReq {
     public String email;
     public String password;
+    public String token;
 }

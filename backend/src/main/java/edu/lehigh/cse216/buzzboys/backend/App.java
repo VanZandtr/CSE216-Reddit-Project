@@ -87,6 +87,14 @@ public class App {
         // return it.  If there's no data, we return "[]", so there's no need 
         // for error handling.
         Spark.get("/messages", (request, response) -> {
+            DefaultReq req = gson.fromJson(request.body(), UserLoginReq.class);
+            String token = req.token;
+            if(!hashmap.containsKey(token)){
+                System.out.println("Invalid Email.");
+                response.status(401);
+                response.type("application/json");
+                return gson.toJson(new StructuredResponse("Error", "Authentication Failed", null));    
+            }
             // ensure status 200 OK, with a MIME type of JSON
             MessageLite req = gson.fromJson(request.body(), MessageLite.class);
             response.status(200);
@@ -99,6 +107,14 @@ public class App {
         // object, extract the title and message, insert them, and return the 
         // ID of the newly created row.
         Spark.post("/messages", (request, response) -> {
+            DefaultReq req = gson.fromJson(request.body(), UserLoginReq.class);
+            String token = req.token;
+            if(!hashmap.containsKey(token)){
+                System.out.println("Invalid Email.");
+                response.status(401);
+                response.type("application/json");
+                return gson.toJson(new StructuredResponse("Error", "Authentication Failed", null));    
+            }
             // NB: if gson.Json fails, Spark will reply with status 500 Internal 
             // Server Error
             MessageReq req = gson.fromJson(request.body(), MessageReq.class);
@@ -124,6 +140,14 @@ public class App {
         // Server Error.  Otherwise, we have an integer, and the only possible 
         // error is that it doesn't correspond to a row with data.
         Spark.get("/messages/:id", (request, response) -> {
+            DefaultReq req = gson.fromJson(request.body(), UserLoginReq.class);
+            String token = req.token;
+            if(!hashmap.containsKey(token)){
+                System.out.println("Invalid Email.");
+                response.status(401);
+                response.type("application/json");
+                return gson.toJson(new StructuredResponse("Error", "Authentication Failed", null));    
+            }
             int idx = Integer.parseInt(request.params("id"));
             // ensure status 200 OK, with a MIME type of JSON
             response.status(200);
@@ -141,6 +165,14 @@ public class App {
         // PUT route for updating a row in the DataStore.  This is almost 
         // exactly the same as POST
         Spark.put("/messages/:id", (request, response) -> {
+            DefaultReq req = gson.fromJson(request.body(), UserLoginReq.class);
+            String token = req.token;
+            if(!hashmap.containsKey(token)){
+                System.out.println("Invalid Email.");
+                response.status(401);
+                response.type("application/json");
+                return gson.toJson(new StructuredResponse("Error", "Authentication Failed", null));    
+            }
             // If we can't get an ID or can't parse the JSON, Spark will send
             // a status 500
             
@@ -160,6 +192,14 @@ public class App {
 
         // DELETE route for removing a row from the DataStore
         Spark.delete("/messages/:id", (request, response) -> {
+            DefaultReq req = gson.fromJson(request.body(), UserLoginReq.class);
+            String token = req.token;
+            if(!hashmap.containsKey(token)){
+                System.out.println("Invalid Email.");
+                response.status(401);
+                response.type("application/json");
+                return gson.toJson(new StructuredResponse("Error", "Authentication Failed", null));    
+            }
             // If we can't get an ID, Spark will send a status 500
             int idx = Integer.parseInt(request.params("id"));
             // ensure status 200 OK, with a MIME type of JSON
@@ -180,6 +220,14 @@ public class App {
         // return it.  If there's no data, we return "[]", so there's no need 
         // for error handling.
         Spark.get("/users", (request, response) -> {
+            DefaultReq req = gson.fromJson(request.body(), UserLoginReq.class);
+            String token = req.token;
+            if(!hashmap.containsKey(token)){
+                System.out.println("Invalid Email.");
+                response.status(401);
+                response.type("application/json");
+                return gson.toJson(new StructuredResponse("Error", "Authentication Failed", null));    
+            }
             // ensure status 200 OK, with a MIME type of JSON
             UserLite req = gson.fromJson(request.body(), UserLite.class);
             response.status(200);
@@ -192,6 +240,14 @@ public class App {
         // object, extract the title and message, insert them, and return the 
         // ID of the newly created row.
         Spark.post("/users", (request, response) -> {
+            DefaultReq req = gson.fromJson(request.body(), UserLoginReq.class);
+            String token = req.token;
+            if(!hashmap.containsKey(token)){
+                System.out.println("Invalid Email.");
+                response.status(401);
+                response.type("application/json");
+                return gson.toJson(new StructuredResponse("Error", "Authentication Failed", null));    
+            }
             // NB: if gson.Json fails, Spark will reply with status 500 Internal 
             // Server Error
             UserReq req = gson.fromJson(request.body(), UserReq.class);
@@ -219,6 +275,15 @@ public class App {
         // Server Error.  Otherwise, we have an integer, and the only possible 
         // error is that it doesn't correspond to a row with data.
         Spark.get("/users/:id", (request, response) -> {
+            DefaultReq req = gson.fromJson(request.body(), UserLoginReq.class);
+            String token = req.token;
+            if(!hashmap.containsKey(token)){
+                System.out.println("Invalid Email.");
+                response.status(401);
+                response.type("application/json");
+                return gson.toJson(new StructuredResponse("Error", "Authentication Failed", null));    
+            }
+
             int idx = Integer.parseInt(request.params("id"));
             // ensure status 200 OK, with a MIME type of JSON
             response.status(200);
@@ -238,6 +303,14 @@ public class App {
         Spark.put("/users/:id", (request, response) -> {
             // If we can't get an ID or can't parse the JSON, Spark will send
             // a status 500
+            DefaultReq req = gson.fromJson(request.body(), UserLoginReq.class);
+            String token = req.token;
+            if(!hashmap.containsKey(token)){
+                System.out.println("Invalid Email.");
+                response.status(401);
+                response.type("application/json");
+                return gson.toJson(new StructuredResponse("Error", "Authentication Failed", null));    
+            }
             
             int idx = Integer.parseInt(request.params("id"));
             UserReq req = gson.fromJson(request.body(), UserReq.class);
@@ -256,6 +329,14 @@ public class App {
 
         // DELETE route for removing a row from the DataStore
         Spark.delete("/users/:id", (request, response) -> {
+            DefaultReq req = gson.fromJson(request.body(), UserLoginReq.class);
+            String token = req.token;
+            if(!hashmap.containsKey(token)){
+                System.out.println("Invalid Email.");
+                response.status(401);
+                response.type("application/json");
+                return gson.toJson(new StructuredResponse("Error", "Authentication Failed", null));    
+            }
             // If we can't get an ID, Spark will send a status 500
             int idx = Integer.parseInt(request.params("id"));
             // ensure status 200 OK, with a MIME type of JSON
@@ -267,14 +348,21 @@ public class App {
             if (!result) {
                 return gson.toJson(new StructuredResponse("error", "unable to delete row " + idx, null));
             } else {
+                hashmap.remove(token);
                 return gson.toJson(new StructuredResponse("ok", null, null));
             }
         });
 
         Spark.post("/users/login", (request, response) -> {
-            //get user from google request
-            User user = request.user;
-            String idTokenString = request.token.toString;
+            //get user from google request    
+            UserLoginReq req = gson.fromJson(request.body(), UserLoginReq.class);
+            String email = req.email;
+            String idTokenString = req.token;
+
+
+            if(hashmap.contains(token)){
+                hashmap.remove(token);
+            }
 
             //make transport and jsonFactory
             //output = new ByteArrayOutputStream();//?
@@ -284,32 +372,38 @@ public class App {
             //verifiy user via google
             GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), JacksonFactory.getDefaultInstance())
             // Specify the CLIENT_ID of the app that accesses the backend:
-            .setAudience(Collections.singletonList(CLIENT_ID))
+            .setAudience(Collections.singletonList(CLIENT_ID)) //CLIENT ID = google url get from Srini
             // Or, if multiple clients access the backend:
             //.setAudience(Arrays.asList(CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3))
             .build();
 
-
             GoogleIdToken idToken = verifier.verify(idTokenString);
             if (idToken != null) {
-            Payload payload = idToken.getPayload();
+                Payload payload = idToken.getPayload();
 
-            // Print user identifier
-            String userId = payload.getSubject();
-            System.out.println("User ID: " + userId);
+                // Print user identifier
+                String userId = payload.getSubject();
+                System.out.println("User ID: " + userId);
 
-            // Get profile information from payload
-            String email = payload.getEmail();
-            boolean emailVerified = Boolean.valueOf(payload.getEmailVerified());
-            String name = (String) payload.get("name");
-            String pictureUrl = (String) payload.get("picture");
-            String locale = (String) payload.get("locale");
-            String familyName = (String) payload.get("family_name");
-            String givenName = (String) payload.get("given_name");
+                // Get profile information from payload
+                if(payload.getHostedDomain().contains("lehigh.edu")){
+                    String email = payload.getEmail();
+                    boolean emailVerified = Boolean.valueOf(payload.getEmailVerified());
+                    String name = (String) payload.get("name");
+                    String pictureUrl = (String) payload.get("picture");
+                    String locale = (String) payload.get("locale");
+                    String familyName = (String) payload.get("family_name");
+                    String givenName = (String) payload.get("given_name");
 
-            // Use or store profile information
-            hashmap.put(user,token);
-
+                    // Use or store profile information
+                    hashmap.put(token, user);
+                }
+                else{
+                    System.out.println("Invalid Email.");
+                    response.status(401);
+                    response.type("application/json");
+                    return gson.toJson(new StructuredResponse("Error", "Authentication Failed", null));    
+                }
             } 
             else {
                 System.out.println("Invalid ID token.");
@@ -317,8 +411,9 @@ public class App {
                 response.type("application/json");
                 return gson.toJson(new StructuredResponse("Error", "Authentication Failed", null));
             }
+
             //possibly return something
-            return idToken;
+            return idToken; //or return;
     
             /*
             UserLoginReq req = gson.fromJson(request.body(), UserLoginReq.class);
@@ -353,6 +448,14 @@ public class App {
         // Server Error.  Otherwise, we have an integer, and the only possible 
         // error is that it doesn't correspond to a row with data.
         Spark.get("/users/:id", (request, response) -> {
+            DefaultReq req = gson.fromJson(request.body(), UserLoginReq.class);
+            String token = req.token;
+            if(!hashmap.containsKey(token)){
+                System.out.println("Invalid Email.");
+                response.status(401);
+                response.type("application/json");
+                return gson.toJson(new StructuredResponse("Error", "Authentication Failed", null));    
+            }
             int idx = Integer.parseInt(request.params("id"));
             // ensure status 200 OK, with a MIME type of JSON
             response.status(200);
@@ -370,6 +473,14 @@ public class App {
         } figure this one out last*/
 
         Spark.put("/messages/:id/upvote", (request, response) -> {
+            DefaultReq req = gson.fromJson(request.body(), UserLoginReq.class);
+            String token = req.token;
+            if(!hashmap.containsKey(token)){
+                System.out.println("Invalid Email.");
+                response.status(401);
+                response.type("application/json");
+                return gson.toJson(new StructuredResponse("Error", "Authentication Failed", null));    
+            }
             int idx = Integer.parseInt(request.params("id"));
             
             response.type("application/json");
@@ -403,6 +514,14 @@ public class App {
         });
 
         Spark.put("/messages/:id/downvote", (request, response) -> {
+            DefaultReq req = gson.fromJson(request.body(), UserLoginReq.class);
+            String token = req.token;
+            if(!hashmap.containsKey(token)){
+                System.out.println("Invalid Email.");
+                response.status(401);
+                response.type("application/json");
+                return gson.toJson(new StructuredResponse("Error", "Authentication Failed", null));    
+            }
             int idx = Integer.parseInt(request.params("id"));
             
             response.type("application/json");
@@ -437,6 +556,14 @@ public class App {
         
 
         Spark.get("/message/:id/comments", (request, response) -> {
+            DefaultReq req = gson.fromJson(request.body(), UserLoginReq.class);
+            String token = req.token;
+            if(!hashmap.containsKey(token)){
+                System.out.println("Invalid Email.");
+                response.status(401);
+                response.type("application/json");
+                return gson.toJson(new StructuredResponse("Error", "Authentication Failed", null));    
+            }
             response.status(200);
             response.type("application/json");
             int msgId = Integer.parseInt(request.params("id"));
@@ -444,6 +571,14 @@ public class App {
         });
 
         Spark.post("/message/:id/comments", (request, response) -> {
+            DefaultReq req = gson.fromJson(request.body(), UserLoginReq.class);
+            String token = req.token;
+            if(!hashmap.containsKey(token)){
+                System.out.println("Invalid Email.");
+                response.status(401);
+                response.type("application/json");
+                return gson.toJson(new StructuredResponse("Error", "Authentication Failed", null));    
+            }
             response.type("application/json");
             
             String token = gson.fromJson(request.body(), DefaultReq.class).userToken;
