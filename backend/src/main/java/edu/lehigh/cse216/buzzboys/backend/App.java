@@ -413,7 +413,9 @@ public class App {
             }
 
             //possibly return something
-            return idToken; //or return;
+            response(200);
+            response.type("application/json");
+            return gson.toJson(new StructuredResponse("Ok", idToken, null));
     
             /*
             UserLoginReq req = gson.fromJson(request.body(), UserLoginReq.class);
