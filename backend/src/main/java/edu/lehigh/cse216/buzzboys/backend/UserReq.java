@@ -7,7 +7,7 @@ package edu.lehigh.cse216.buzzboys.backend;
  *     do not need a constructor.
  */
 public class UserReq {
-    
+    public String token;//Raymond: Added token string to userReq
     public String realName;
     public String userName;
     public String email;
