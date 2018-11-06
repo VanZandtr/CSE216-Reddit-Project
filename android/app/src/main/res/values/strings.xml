@@ -17,4 +17,27 @@
         completions."
     </string>
     <string name="action_sign_in_cancel">Cancel</string>
+    <string name="upvote">Upvote</string>
+    <string name="downvote">Downvote</string>
+    <string name="comments">comments</string>
+    <string name="comment">comment</string>
+
+    <string name="commentbox">comment</string>
+
+    <string name="createCommentActivityButton">Comment</string>
+
+
+
+    <!-- Strings for login/register activity -->
+    <string name="hint_password"></string>
+    <string name="login_input_email"></string>
+    <string name="login_input_password"></string>
+    <string name="hint_email"></string>
+    <string name="btn_login">Login</string>
+    <string name="btn_link_signup">Signup</string>
+    <string name="btn_sign_up">Signup</string>
+    <string name="btn_link_login">Login</string>
+    <string name="title_activity_show_comments">ShowCommentsActivity</string>
+
+
 </resources>

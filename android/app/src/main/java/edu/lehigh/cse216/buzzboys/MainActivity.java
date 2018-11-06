@@ -1,6 +1,7 @@
 package edu.lehigh.cse216.buzzboys;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -11,6 +12,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 
@@ -20,16 +22,16 @@ import com.android.volley.toolbox.StringRequest;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 
 import edu.lehigh.cse216.buzzboys.Data.Message;
 
+import static edu.lehigh.cse216.buzzboys.LoginActivity.PREFS_NAME;
+
 /**
  * Main Activity / Landing page for the user. Displays all messages
- * TODO Make view/ui template for messages: subject, message, upvote count, and buttons for upvoting or downvoting
- * TODO indicate whether a user upvoted/downvoted the message
- * TODO If the user tries to upvote when they aren't logged in, start LoginActivity
  *
  */
 public class MainActivity extends AppCompatActivity {
@@ -43,40 +45,58 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        VolleySingleton volleySingleton = VolleySingleton.getInstance(this);
+        RecyclerView rv = (RecyclerView) findViewById(R.id.message_list_view);
 
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, VolleySingleton.usersUrl,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        getMessages(response);
+        rv.setLayoutManager(new LinearLayoutManager(this));
+        ItemListAdapter adapter = new ItemListAdapter(this, messages);
+        rv.setAdapter(adapter);
+/*
+        //have to be logged in to see messages
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        if (!settings.getString("logged", "").toString().equals("logged")) {
+            Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+            startActivity(intent);
+            Toast.makeText(getApplicationContext(), "Please Login.", Toast.LENGTH_SHORT).show();
+        }
+*/
+        if (VolleySingleton.OFFLINE)
+            for (Message m : Message.TestMessages)
+                messages.add(m);
+        else {
+            VolleySingleton volleySingleton = VolleySingleton.getInstance(this);
+            StringRequest stringRequest = new StringRequest(Request.Method.GET, VolleySingleton.messagesUrl,
+                    new Response.Listener<String>() {
+                        @Override
+                        public void onResponse(String response) {
+                            getMessages(response);
+                        }
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            Log.d("TheBuzz", "Error getting messages from server");
+                        }
                     }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.d("TheBuzz", "Error getting messages from server");
-                    }
-                }
-        );
-        volleySingleton.addRequest(stringRequest);
-
+            );
+            volleySingleton.addRequest(stringRequest);
+        }
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent i = new Intent(getApplicationContext(), CreateMessageActivity.class);
-                //i.putExtra("User", "CSE216 is the best");
-                startActivityForResult(i, 789); // 789 is the number that will come back to us
+                i.putExtra("From", "MainActivity");
+                startActivityForResult(i, 789);
             }
         });
     }
 
     private void getMessages(String response) {
         try {
-            JSONArray jsonArray= new JSONArray(response);
+            JSONObject obj = new JSONObject(response);
+            JSONArray jsonArray= obj.getJSONArray("mData");
             for (int i = 0; i < jsonArray.length(); ++i) {
-                messages.add(Message.getMessageFromJSON(jsonArray.getJSONObject(i)));
+                messages.add(Message.getFromJSON(jsonArray.getJSONObject(i)));
             }
         } catch (final JSONException e) {
             Log.d("TheBuzz", "Error parsing JSON message:" + e.getMessage());
@@ -84,9 +104,7 @@ public class MainActivity extends AppCompatActivity {
         }
         Log.d("TheBuzz", "Successfully parsed Messages");
         RecyclerView rv = (RecyclerView) findViewById(R.id.message_list_view);
-        rv.setLayoutManager(new LinearLayoutManager(this));
-        ItemListAdapter adapter = new ItemListAdapter(this, messages);
-        rv.setAdapter(adapter);
+        rv.getAdapter().notifyDataSetChanged();
     }
 
     @Override
@@ -111,6 +129,16 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
 
+        //TODO --- logout button
+/*
+        if (id == R.id.logout) {
+            SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+            SharedPreferences.Editor editor = settings.edit();
+            editor.remove("logged");
+            editor.commit();
+            finish();
+        }
+        */
         return super.onOptionsItemSelected(item);
     }
 }

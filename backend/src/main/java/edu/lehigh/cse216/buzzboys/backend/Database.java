@@ -48,6 +48,11 @@ public class Database {
     private PreparedStatement mSelectVotesByMessageID;
     private PreparedStatement mSelectVoteByUsername;
 
+    //Comments
+    private PreparedStatement mSelectOneComment;
+    private PreparedStatement mSelectAllFromComments;
+    private PreparedStatement mSelectCommentsWithMessageId; 
+
     /**
      * Inserting rows
      */
@@ -59,6 +64,9 @@ public class Database {
 
     //Votes
     private PreparedStatement mInsertVote;
+
+    //Comments
+    private PreparedStatement mInsertOneComment;
 
     /**
      * Updating rows
@@ -87,6 +95,9 @@ public class Database {
 
      //Rows
      private PreparedStatement mDeleteOneVote;
+
+     //Comments
+     private PreparedStatement mDeleteOneComment;
     
     /**
      * Create table statements
@@ -164,30 +175,40 @@ public class Database {
             db.mDropUsersTable = db.mConnection.prepareStatement("DROP TABLE users");
             db.mDropMessagesTable = db.mConnection.prepareStatement("DROP TABLE messages");
             db.mDropVotesTable = db.mConnection.prepareStatement("DROP TABLE votes");
+            
             // Standard CRUD operations
             db.mDeleteOneMessage = db.mConnection.prepareStatement("DELETE FROM messages WHERE id = ?");
             db.mDeleteOneUser = db.mConnection.prepareStatement("DELETE FROM users WHERE id = ?");
             db.mDeleteOneVote = db.mConnection.prepareStatement("DELETE FROM votes WHERE id = ?");
+            db.mDeleteOneComment = db.mConnection.prepareStatement("DELETE FROM com WHERE id = ?");
 
             db.mInsertOneMessage = db.mConnection.prepareStatement("INSERT INTO messages VALUES (default, ?, ?, ?, ?, ?, ?, ?)");//added 2 ?'s'
             db.mInsertOneUser = db.mConnection.prepareStatement("INSERT INTO users VALUES (default, ?, ?, ?, ?, ?)");//added 2
             db.mInsertVote = db.mConnection.prepareStatement("INSERT INTO votes VALUES (default, ?, ?, ?, ?)");
-            db.mSelectAllFromMessages = db.mConnection.prepareStatement("SELECT id, subject, username, upvotes, downvotes FROM messages");//added
-            db.mSelectAllFromUsers = db.mConnection.prepareStatement("SELECT id, username, firstname, lastname, email FROM users");//added
+            db.mInsertOneComment = db.mConnection.prepareStatement("INSERT INTO com VALUES (default, ?, ?, ?, ?)");
+
+            db.mSelectAllFromMessages = db.mConnection.prepareStatement("SELECT * FROM messages");//added
+            db.mSelectAllFromUsers = db.mConnection.prepareStatement("SELECT * FROM users");//added
+            db.mSelectAllFromComments = db.mConnection.prepareStatement("SELECT * FROM com");//added
+            
             db.mSelectOneMessage = db.mConnection.prepareStatement("SELECT * from messages WHERE id = ?");
             db.mSelectOneUser = db.mConnection.prepareStatement("SELECT * from users WHERE id = ?");
-            db.mUpdateOneMessage = db.mConnection.prepareStatement("UPDATE messages SET title = ? message = ?, lastUpdated = ? WHERE id = ?");
+            db.mSelectOneComment = db.mConnection.prepareCall("SELECT * from com WHERE id = ?");
+            
+            db.mUpdateOneMessage = db.mConnection.prepareStatement("UPDATE messages SET title = ? message = ?, last_updated = ? WHERE id = ?");
             //Add functionality to update one field each
-            db.mUpdateOneUser = db.mConnection.prepareStatement("UPDATE users SET username = ?, firstname = ?, lastname = ?, email = ? WHERE id = ?");
+            db.mUpdateOneUser = db.mConnection.prepareStatement("UPDATE users SET username = ?, realname = ?, email = ?, password = ?, salt = ? WHERE uid = ?");
             db.mUpdateOneMessageUp = db.mConnection.prepareStatement("UPDATE messages SET upvotes = ? WHERE id = ?");
             db.mUpdateOneMessageDown = db.mConnection.prepareStatement("UPDATE messages SET downvotes = ? WHERE id = ?");
+            
             db.mSelectOneVote = db.mConnection.prepareStatement("SELECT * from votes WHERE id=?");
-            db.mSelectAllFromVotes= db.mConnection.prepareStatement("SELECT id, message_id, username, is_upvote FROM votes");//added
+            db.mSelectAllFromVotes= db.mConnection.prepareStatement("SELECT * FROM votes");//added
             db.mSelectVoteByMessageAndUsername = db.mConnection.prepareStatement("SELECT * from votes WHERE message_id = ? AND username = ?");
             db.mSelectVotesByMessageID = db.mConnection.prepareStatement("SELECT * from votes WHERE message_id = ?");
             db.mSelectVoteByUsername = db.mConnection.prepareStatement("SELECT * from votes WHERE username = ?");
             db.mUpdateOneVote = db.mConnection.prepareStatement("UPDATE votes SET is_upvote = ? WHERE message_id = ? AND username = ?"); //add method
 
+            db.mSelectCommentsWithMessageId = db.mConnection.prepareStatement("SELECT * from com WHERE mid = ?");
 
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement");
@@ -205,7 +226,7 @@ public class Database {
      */
     static void connect(Database db) {
         //Give the Database object a connection, fail if we cannot get one
-        String db_url = "postgres://bqmyghussmyoch:0b4491be62bc014a18f2f4c7795067a7e1c898b2bf20102729254cbdf748f9cf@ec2-54-83-27-165.compute-1.amazonaws.com:5432/d27ergo5pr6bta";
+        String db_url = "postgres://bqmyghussmyoch:0b4491be62bc014a18f2f4c7795067a7e1c898b2bf20102729254cbdf748f9cf@ec2-54-83-27-165.compute-1.amazonaws.com:5432/d27ergo5pr6bta?sslmode=require";
         try {
             Class.forName("org.postgresql.Driver");
             URI dbUri = new URI(db_url);
@@ -213,6 +234,7 @@ public class Database {
             db.globalUsername = username;//added to be able to use username
             String password = dbUri.getUserInfo().split(":")[1];
             String dbUrl = "jdbc:postgresql://" + dbUri.getHost() + ':' + dbUri.getPort() + dbUri.getPath();
+            System.out.println(dbUrl);
             Connection conn = DriverManager.getConnection(dbUrl, username, password);
             if (conn == null) {
                 System.err.println("Error: DriverManager.getConnection() returned a null object");
@@ -280,13 +302,14 @@ public class Database {
         return count;
     }
 
-    int insertUserRow(String username, String firstname, String lastname, String email) {//added
+    int insertUserRow(String realname, String username, String email, byte[] password, byte[] salt) {
         int count = 0;
         try {
             mInsertOneUser.setString(1, username);
-            mInsertOneUser.setString(2, firstname);
-            mInsertOneUser.setString(3, lastname);
-            mInsertOneUser.setString(4, email);
+            mInsertOneUser.setString(2, realname);
+            mInsertOneUser.setString(3, email);
+            mInsertOneUser.setBytes(4, salt);
+            mInsertOneUser.setBytes(5, password);
             mInsertOneUser.setTimestamp(5, new Timestamp(new Date().getTime()));
             count += mInsertOneUser.executeUpdate();
         } catch (SQLException e) {
@@ -312,7 +335,7 @@ public class Database {
             ResultSet rs = mSelectAllFromMessages.executeQuery();
             
             while (rs.next()) {
-                res.add(new MessageLite(rs.getInt("id"), rs.getDate("date_created"), rs.getString("user"), rs.getString("subject")));
+                res.add(new MessageLite(rs.getInt("id"), new Date(rs.getTimestamp("date_created").getTime()), rs.getString("username"), rs.getString("subject")));
             }
             rs.close();
             return res;
@@ -341,7 +364,8 @@ public class Database {
         try {
             ResultSet rs = mSelectAllFromUsers.executeQuery();
             while (rs.next())
-                res.add(new UserLite(rs.getInt("id"), new Date(rs.getTimestamp("date_created").getTime()), rs.getString("firstname"), rs.getString("lastname")));//added
+                //int id, Date date, String real, String user, String email
+                res.add(new UserLite(rs.getInt("id"), new Date(rs.getTimestamp("date_created").getTime()), rs.getString("realname"), rs.getString("username"), rs.getString("email")));//added
             rs.close();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -363,7 +387,7 @@ public class Database {
             mSelectOneMessage.setInt(1, id);
             ResultSet rs = mSelectOneMessage.executeQuery();
             if (rs.next()) {
-                res = new Message(rs.getInt("id"), rs.getDate("date_created"), rs.getString("subject"), rs.getString("message"), rs.getString("username"), rs.getInt("upvotes"), rs.getInt("downvotes"), rs.getDate("last_updated"));//added
+                res = new Message(rs.getInt("id"), rs.getTimestamp("date_created"), rs.getString("username"), rs.getString("subject"), rs.getString("message"), rs.getInt("upvotes"), rs.getInt("downvotes"), rs.getTimestamp("last_updated"));//added
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -371,19 +395,62 @@ public class Database {
         return res;
     }
 
-    User selectOneUser(int id) {
-        User res = null;
+    UserLite selectOneUser(int id) {
+        UserLite res = null;
         try {
             mSelectOneUser.setInt(1, id);
             ResultSet rs = mSelectOneUser.executeQuery();
             if (rs.next()) {
-                res = new User(rs.getInt("id"), rs.getDate("date_created"), rs.getString("firstname"), rs.getString("lastname"), rs.getString("username"), rs.getString("email"));
+                //int id, Date date, String real, String user, String email
+                res = new UserLite(rs.getInt("id"), new Date(rs.getTimestamp("date_created").getTime()), rs.getString("realname"), rs.getString("username"), rs.getString("email"));//added
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return res;
     }
+
+    /**
+     * 
+     * @param user - A user object with some non-null properties.
+     * @return A user object, equal on the properties of the user passed in, and with all properties non null
+     */
+    User selectUserWithProperties(User user) {
+        User res = null;
+        try {
+            String query = "SELECT * from users WHERE ";
+            boolean addAnd = false;
+            boolean email, realname, username;
+            email = realname = username = false;
+            if (user.uEmail != null) {
+                query += "email = ?";
+                addAnd = true;
+            }
+            if (user.uRealName == null) {
+                if (addAnd) query += ", ";
+                query += "realname = ?";
+            }
+            if (user.uUserName == null) {
+                if (addAnd) query += ", ";
+                query += "username = ?";
+            }
+            PreparedStatement getUser = db.mConnection.prepareStatement(query);
+            int index = 1;
+            if (email) getUser.setString(index++, user.uEmail);
+            if (realname) getUser.setString(index++, user.uRealName);
+            if (username) getUser.setString(index++, user.uUserName);
+            ResultSet rs = getUser.executeQuery();
+            if (rs.next())
+                //int id, Date date, String real, String user, String email, byte[] pass, byte[] salt
+                res = new User(rs.getInt("id"), new Date(rs.getTimestamp("date_created").getTime()), rs.getString("realname"), rs.getString("username"), rs.getString("email"), rs.getBytes("password"), rs.getBytes("salt"));//added
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
+
 
     /**
      * Delete a row by ID
@@ -427,8 +494,8 @@ public class Database {
         try {
             mUpdateOneMessage.setString(1, title);
             mUpdateOneMessage.setString(2, message);
-            mUpdateOneMessage.setTimestamp(2, new Timestamp(new Date().getTime()));
-            mUpdateOneMessage.setInt(3, id);
+            mUpdateOneMessage.setTimestamp(3, new Timestamp(new Date().getTime()));
+            mUpdateOneMessage.setInt(4, id);
             res = mUpdateOneMessage.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -436,10 +503,10 @@ public class Database {
         return res;
     }
 
-    int updateOneMessageUp(int id, int upvotes) {
+    int updateOneMessageUp(int id, int i) {
         int res = -1;
         try {
-            mUpdateOneMessageUp.setInt(1, upvotes);
+            mUpdateOneMessageUp.setInt(1, getUpvotes(id)+i);
             mUpdateOneMessageUp.setInt(2, id);
             res = mUpdateOneMessageUp.executeUpdate();
         } catch (SQLException e) {
@@ -448,10 +515,10 @@ public class Database {
         return res;
     }
 
-    int updateOneMessageDown(int id, int downvotes) {
+    int updateOneMessageDown(int id, int i) {
         int res = -1;
         try {
-            mUpdateOneMessageDown.setInt(1, downvotes);
+            mUpdateOneMessageDown.setInt(1, getDownvotes(id)+i);
             mUpdateOneMessageDown.setInt(2, id);
             res = mUpdateOneMessageDown.executeUpdate();
         } catch (SQLException e) {
@@ -460,14 +527,17 @@ public class Database {
         return res;
     }
 
-    int updateOneUser(int id, String username, String firstname, String lastname, String email) {
+    int updateOneUser(int id, String realname, String username, String email, byte[] password, byte[] salt) {
         int res = -1;
         try {
+            //int id, Date date, String real, String user, String email
+            
             mUpdateOneUser.setString(1, username);
-            mUpdateOneUser.setString(2, firstname);
-            mUpdateOneUser.setString(3, lastname);
-            mUpdateOneUser.setString(4, email);
-            mUpdateOneUser.setInt(5, id);
+            mUpdateOneUser.setString(2, realname);
+            mUpdateOneUser.setString(3, email);
+            mUpdateOneUser.setBytes(4, password);
+            mUpdateOneUser.setBytes(5, salt);
+            mUpdateOneUser.setInt(6, id);
             res = mUpdateOneUser.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -561,7 +631,7 @@ public class Database {
             mSelectOneVote.setInt(1, id);
             ResultSet rs = mSelectOneVote.executeQuery();
             if (rs.next()) {
-                res = new Vote(rs.getInt("id"), rs.getDate("vote_date"), rs.getInt("message_id"), rs.getString("username"), rs.getInt("is_upvote"));//added
+                res = new Vote(rs.getInt("id"), new Date(rs.getTimestamp("vote_date").getTime()), rs.getInt("message_id"), rs.getString("username"), rs.getInt("is_upvote"));//added
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -575,7 +645,7 @@ public class Database {
             mSelectVoteByMessageAndUsername.setInt(1, message_id);
             mSelectVoteByMessageAndUsername.setString(2, username);
             ResultSet rs = mSelectVoteByMessageAndUsername.executeQuery();
-            res = new Vote(rs.getInt("id"), rs.getDate("vote_date"), rs.getInt("message_id"), rs.getString("username"), rs.getInt("is_upvote"));//added
+            res = new Vote(rs.getInt("id"), new Date(rs.getDate("vote_date").getTime()), rs.getInt("message_id"), rs.getString("username"), rs.getInt("is_upvote"));//added
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -628,6 +698,74 @@ public class Database {
         return res;
     }
 
+    Comment selectOneComment(int id) {
+        Comment res = null;
+        try {
+            mSelectOneComment.setInt(1, id);
+            ResultSet rs = mSelectOneComment.executeQuery();
+            if (rs.next()) {
+                res = new Comment(rs.getInt("id"), new Date(rs.getTimestamp("date_created").getTime()), rs.getInt("uid"), rs.getInt("mid"), rs.getString("content"));
+            }
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
+    List<Comment> selectAllFromComments() {
+        List<Comment> comments = new ArrayList<Comment>();
+        try {
+            ResultSet rs = mSelectAllFromComments.executeQuery();
+            while (rs.next()) {
+                comments.add(new Comment(rs.getInt("id"), new Date(rs.getTimestamp("date_created").getTime()), rs.getInt("uid"), rs.getInt("mid"), rs.getString("content")));
+            }
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return comments;
+    }
+
+    List<Comment> selectCommentsWithMessageId(int msgId) {
+        List<Comment> comments = new ArrayList<Comment>();
+        try {
+            mSelectCommentsWithMessageId.setInt(1, msgId);
+            ResultSet rs = mSelectCommentsWithMessageId.executeQuery();
+            while (rs.next()) {
+                comments.add(new Comment(rs.getInt("id"), new Date(rs.getTimestamp("date_created").getTime()), rs.getInt("uid"), rs.getInt("mid"), rs.getString("content")));
+            }
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return comments;
+    }
+
+    int deleteCommentRow(int id) {
+        int res = -1;
+        try {
+            mDeleteOneComment.setInt(1, id);
+            res = mDeleteOneComment.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
+    int insertCommentRow(int uid, int mid, String content) {
+        int count = 0;
+        try {
+            mInsertOneComment.setInt(1, uid);
+            mInsertOneComment.setInt(2, mid);
+            mInsertOneComment.setString(3, content); //added
+            mInsertOneComment.setTimestamp(4, new Timestamp(new Date().getTime()));
+            count += mInsertOneMessage.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return count;
+    }
 
     /**
      * Create user table.  If it already exists, this will print an error

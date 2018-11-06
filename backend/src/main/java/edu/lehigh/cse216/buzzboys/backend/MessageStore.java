@@ -1,7 +1,7 @@
 package edu.lehigh.cse216.buzzboys.backend;
 
 import java.util.List;
-import java.util.ArrayList;;
+import java.util.ArrayList;
 
 import java.util.Date;
 
@@ -92,21 +92,21 @@ public class MessageStore extends DataStore<MessageLite, Message> {
     /**
      * Update the upvotes of a message
      * @param id
-     * @param upvotes
+     * @param i - the number to increase/decrease the upvote count by
      * @return
      */
-    public synchronized boolean updateUpvote(int id, int upvotes) {
-        return (readOne(id) == null) ? false : (db.updateOneMessageUp(id, upvotes) == -1) ? false : true;
+    public synchronized boolean updateUpvote(int id, int i) {
+        return (readOne(id) == null) ? false : (db.updateOneMessageUp(id, i) == -1) ? false : true;
     }
 
     /**
      * Update the downvotes of the message
      * @param id
-     * @param downvotes
+     * @param i - the number to increase/decrease the downvote count by
      * @return
      */
-    public synchronized boolean updateDownvote(int id, int downvotes) {
-        return (readOne(id) == null) ? false : (db.updateOneMessageDown(id, downvotes) == -1) ? false : true;
+    public synchronized boolean updateDownvote(int id, int i) {
+        return (readOne(id) == null) ? false : (db.updateOneMessageDown(id, i) == -1) ? false : true;
     }
 
     /**

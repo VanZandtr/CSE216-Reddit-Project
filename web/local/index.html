@@ -1,0 +1,38 @@
+<html>
+<head>
+    <link rel="stylesheet" href="app.css">
+    <script src="jquery.min.js"></script>
+    <title>The Buzz</title>
+</head>
+<body>
+    <script src="app.js"></script>
+
+  <div id="loginContainer">
+    <label for="uname"><b>Username</b></label>
+    <input type="text" placeholder="Enter Username" id="uname" required>
+
+    <label for="psw"><b>Password</b></label>
+    <input type="password" placeholder="Enter Password" id="psw" required>
+
+    <input type="button" id="loginButton" value="Login" />
+  </div>
+
+<div id="mainBoard">
+    <div id="addElement">
+        <h3>New Post</h3>
+	<input type="text" id="newTitle" placeholder="Enter Title">
+	<br><textarea id="newMessage" placeholder="Enter Message"></textarea>
+        <button id="addButton">Add</button>
+        <button id="addCancel">Cancel</button>
+    </div>
+    <div id="showElements">
+        <h3>All Posts</h3>
+	<div id="messageList"></div>
+    </div>
+</div>
+	<div id="userprofile">
+	<h3>User Profile</h3>
+	</div>
+</body>
+</html>
+

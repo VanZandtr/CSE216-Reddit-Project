@@ -27,3 +27,6 @@ cp node_modules/jquery/dist/jquery.min.js $TARGETFOLDER/$WEBFOLDERNAME
 
 # step 4: compile TypeScript files
 node_modules/typescript/bin/tsc app.ts --strict --outFile $TARGETFOLDER/$WEBFOLDERNAME/app.js
+
+# step 5: copy css files
+cp app.css $TARGETFOLDER/$WEBFOLDERNAME

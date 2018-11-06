@@ -6,6 +6,13 @@ import spark.Spark;
 
 // Import Google's JSON library
 import com.google.gson.*;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpOptions;
+import org.apache.http.protocol.HTTP;
+
+import java.security.SecureRandom;
+import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -21,6 +28,11 @@ import java.util.Map;
  */
 public class App {
     public static void main(String[] args) {
+
+        // Get the port on which to listen for requests
+        Spark.port(getIntFromEnv("PORT", 5432));
+
+
         //get system env variables to connect to postgres db
         // Map<String, String> env = System.getenv();
         // String ip = env.get("POSTGRES_IP");
@@ -44,24 +56,34 @@ public class App {
         //     with IDs starting over from 0.
         final StoreHandler store = new StoreHandler();
         
-        /*// Set up the location for serving static files
-        // Set up the location for serving static files.  If the STATIC_LOCATION
-        // environment variable is set, we will serve from it.  Otherwise, serve
-        // from "/web"
+        /**
+         * Set up the location for serving static files
+         * Set up the location for serving static files.  If the STATIC_LOCATION
+         * environment variable is set, we will serve from it.  Otherwise, serve
+         * from "/web"
+         */
         String static_location_override = System.getenv("STATIC_LOCATION");
         if (static_location_override == null) {
             Spark.staticFileLocation("/web");
         } else {
             Spark.staticFiles.externalLocation(static_location_override);
-        }*/
+        }
+
+        //create tables
+        // Database db = Database.getDatabase();
+        // db.createMessagesTable();
+        // db.createUsersTable();
+        // db.createVotesTable();
     
         // /messages
+        
 
         // GET route that returns all message titles and Ids.  All we do is get 
         // the data, embed it in a StructuredResponse, turn it into JSON, and 
         // return it.  If there's no data, we return "[]", so there's no need 
         // for error handling.
         Spark.get("/messages", (request, response) -> {
+            
             // ensure status 200 OK, with a MIME type of JSON
             MessageLite req = gson.fromJson(request.body(), MessageLite.class);
             response.status(200);
@@ -76,7 +98,7 @@ public class App {
         Spark.post("/messages", (request, response) -> {
             // NB: if gson.Json fails, Spark will reply with status 500 Internal 
             // Server Error
-            Message req = gson.fromJson(request.body(), Message.class);
+            MessageReq req = gson.fromJson(request.body(), MessageReq.class);
             // ensure status 200 OK, with a MIME type of JSON
             // NB: even on error, we return 200, but with a JSON object that
             //     describes the error.
@@ -120,7 +142,7 @@ public class App {
             // a status 500
             
             int idx = Integer.parseInt(request.params("id"));
-            Message req = gson.fromJson(request.body(), Message.class);
+            MessageReq req = gson.fromJson(request.body(), MessageReq.class);
             // ensure status 200 OK, with a MIME type of JSON
             response.status(200);
             response.type("application/json");
@@ -169,14 +191,16 @@ public class App {
         Spark.post("/users", (request, response) -> {
             // NB: if gson.Json fails, Spark will reply with status 500 Internal 
             // Server Error
-            User req = gson.fromJson(request.body(), User.class);
+            UserReq req = gson.fromJson(request.body(), UserReq.class);
             // ensure status 200 OK, with a MIME type of JSON
             // NB: even on error, we return 200, but with a JSON object that
             //     describes the error.
             response.status(200);
             response.type("application/json");
             // NB: createEntry checks for null title and message
-            int newId = store.user.createEntry(req.ufirst, req.ulast, req.username, req.email);
+            byte[] salt = Security.generateSalt();
+            byte[] hashedPass = Security.hashPassword(req.password, salt);
+            int newId = store.user.createEntry(req.realName, req.userName, req.email, hashedPass, salt);
             if (newId == -1) {
                 return gson.toJson(new StructuredResponse("error", "error performing insertion", null));
             } else {
@@ -195,7 +219,7 @@ public class App {
             // ensure status 200 OK, with a MIME type of JSON
             response.status(200);
             response.type("application/json");
-            User data = store.user.readOne(idx);
+            UserLite data = store.user.readOne(idx);
             if (data == null) {
                 return gson.toJson(new StructuredResponse("error", idx + " not found", null));
             } else {
@@ -212,11 +236,13 @@ public class App {
             // a status 500
             
             int idx = Integer.parseInt(request.params("id"));
-            User req = gson.fromJson(request.body(), User.class);
+            UserReq req = gson.fromJson(request.body(), UserReq.class);
             // ensure status 200 OK, with a MIME type of JSON
             response.status(200);
             response.type("application/json");
-            User result = store.user.updateOne(idx, req.username, req.ufirst, req.ulast, req.email);
+            byte[] salt = Security.generateSalt();
+            byte[] hashedPass = Security.hashPassword(req.password, salt);
+            UserLite result = store.user.updateOne(idx, req.realName, req.userName, req.email, hashedPass, salt);
             if (result == null) {
                 return gson.toJson(new StructuredResponse("error", "unable to update row " + idx, null));
             } else {
@@ -241,6 +267,31 @@ public class App {
             }
         });
 
+        Spark.post("/users/login", (request, response) -> {
+            
+            UserLoginReq req = gson.fromJson(request.body(), UserLoginReq.class);
+            String email = req.email;
+            User u = new User();
+            u.uEmail = email;
+            User foundUser = store.user.readOneWithProperties(u);
+            byte[] salt = foundUser.uSalt;
+            byte[] hashedPass = Security.hashPassword(req.password, salt);
+            if (Arrays.equals(foundUser.uPassword, hashedPass))
+            {
+                response.status(200);
+                response.type("application/json");
+                SecureRandom random = new SecureRandom();
+                byte[] bytes = new byte[20];
+                random.nextBytes(bytes);
+                String token = bytes.toString();
+                Session.Login(foundUser.uUserName, token);
+                return gson.toJson(new StructuredResponse("OK", null, token));
+            }
+            response.status(401);
+            response.type("application/json");
+            return gson.toJson(new StructuredResponse("Error", "Authentication Failed", null));
+
+        });
 
         // GET route that returns every message for a userId.
         // The ":id" suffix in the first parameter to get() becomes 
@@ -253,7 +304,7 @@ public class App {
             // ensure status 200 OK, with a MIME type of JSON
             response.status(200);
             response.type("application/json");
-            User data = store.user.readOne(idx);
+            UserLite data = store.user.readOne(idx);
             if (data == null) {
                 return gson.toJson(new StructuredResponse("error", idx + " not found", null));
             } else {
@@ -267,35 +318,114 @@ public class App {
 
         Spark.put("/messages/:id/upvote", (request, response) -> {
             int idx = Integer.parseInt(request.params("id"));
-            int upvotes = Integer.parseInt(request.params("upvotes"));
-            // ensure status 200 OK, with a MIME type of JSON
-            response.status(200);
-            response.type("application/json");
             
-            Boolean data = store.msg.updateUpvote(idx, upvotes);
-            //you need to add the votes table functionality, queries with joins need to be made and methods implemented
+            response.type("application/json");
+            String token = gson.fromJson(request.body(), DefaultReq.class).userToken;
+            String username = Session.getUsername(token);
+
+            //Check to see if the user already voted
+            int msgId = Integer.parseInt(request.params("id"));
+            Vote existingVote = store.vote.readVoteByMessageAndUsername(msgId, username);
+            
+            if (existingVote != null) {
+                if (existingVote.is_upvote == 1) {
+                    //do nothing
+                    response.status(304);
+                    return gson.toJson(new StructuredResponse("ok", "Not Updated", null));
+                }
+                else if (existingVote.is_upvote == 0) {
+                    store.vote.deleteOne(existingVote.id);
+                    store.msg.updateDownvote(msgId, -1);
+                }
+            }
+            int result = store.vote.createEntry(msgId, username, 1);
+            Boolean data = store.msg.updateUpvote(idx, 1);
             if (!data) {
+                response.status(304);
                 return gson.toJson(new StructuredResponse("error", idx + "not found or updated failed", null));
             } else {
+                response.status(200);
                 return gson.toJson(new StructuredResponse("ok", null, null));
             }
         });
 
         Spark.put("/messages/:id/downvote", (request, response) -> {
             int idx = Integer.parseInt(request.params("id"));
-            int downvotes = Integer.parseInt(request.params("downvotes"));
-            // ensure status 200 OK, with a MIME type of JSON
-            response.status(200);
-            response.type("application/json");
             
-            boolean data = store.msg.updateDownvote(idx, downvotes);
-            //you need to add the votes table functionality, queries with joins need to be made and methods implemented
+            response.type("application/json");
+            String token = gson.fromJson(request.body(), DefaultReq.class).userToken;
+            String username = Session.getUsername(token);
+
+            //Check to see if the user already voted
+            int msgId = Integer.parseInt(request.params("id"));
+            Vote existingVote = store.vote.readVoteByMessageAndUsername(msgId, username);
+            
+            if (existingVote != null) {
+                if (existingVote.is_upvote == 0) {
+                    //do nothing
+                    response.status(304);
+                    return gson.toJson(new StructuredResponse("ok", "Not Updated", null));
+                }
+                else if (existingVote.is_upvote == 1) {
+                    store.vote.deleteOne(existingVote.id);
+                    store.msg.updateUpvote(msgId, -1);
+                }
+            }
+            int result = store.vote.createEntry(msgId, username, 0);
+            Boolean data = store.msg.updateDownvote(idx, 1);
             if (!data) {
-                return gson.toJson(new StructuredResponse("error", idx + " not found or update failed", null));
+                response.status(304);
+                return gson.toJson(new StructuredResponse("error", idx + "not found or updated failed", null));
             } else {
+                response.status(200);
                 return gson.toJson(new StructuredResponse("ok", null, null));
             }
         });
+        
 
+        Spark.get("/message/:id/comments", (request, response) -> {
+            response.status(200);
+            response.type("application/json");
+            int msgId = Integer.parseInt(request.params("id"));
+            return gson.toJson(new StructuredResponse("ok", null, store.comment.readAllWithMessageId(msgId)));
+        });
+
+        Spark.post("/message/:id/comments", (request, response) -> {
+            response.type("application/json");
+            
+            String token = gson.fromJson(request.body(), DefaultReq.class).userToken;
+            String username = Session.getUsername(token);
+            User user = new User();
+            user.uUserName = username;
+            user = store.user.readOneWithProperties(user);
+            int userId = user.id;
+            int msgId = Integer.parseInt(request.params("id"));
+
+            CommentReq req = gson.fromJson(request.body(), CommentReq.class);
+            int newId = store.comment.createEntry(userId, msgId, req.content);
+            if (newId == -1) {
+                response.status(500);
+                return gson.toJson(new StructuredResponse("error", "error performing insertion", null));
+            } else {
+                return gson.toJson(new StructuredResponse("ok", "" + newId, null));
+            }
+        });
+    }
+
+    /**
+     * Get an integer environment varible if it exists, and otherwise return the
+     * default value.
+     * 
+     * @envar      The name of the environment variable to get.
+     * @defaultVal The integer value to use as the default if envar isn't found
+     * 
+     * @returns The best answer we could come up with for a value for envar
+     */
+    static int getIntFromEnv(String envar, int defaultVal) {
+        ProcessBuilder processBuilder = new ProcessBuilder();
+        if (processBuilder.environment().get(envar) != null) {
+            return Integer.parseInt(processBuilder.environment().get(envar));
+        }
+        return defaultVal;
     }
 }
