@@ -14,6 +14,13 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.SignInButton;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.Task;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -34,16 +41,37 @@ public class LoginActivity extends AppCompatActivity {
     ProgressDialog progressDialog;
     private EditText loginInputEmail, loginInputPassword;
     private Button btnlogin;
+    private SignInButton gbtnlogin;
     //private Button btnLinkSignup;
     public static final String PREFS_NAME = "LoginPrefs";
 
     User user;
 
+    GoogleSignInClient mGoogleSignInClient;
+    private static int RC_SIGN_IN = 0;  // request code for starting new activity.
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        // Google Sign-in phase 3
+        // Configure sign-in to request the user's ID, email address, and basic
+        // profile. ID and basic profile are included in DEFAULT_SIGN_IN.
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                .requestIdToken("426643010023-nohc4crv4ck9lcp2ru5vurbehv0r48v0.apps.googleusercontent.com") // OAuth 2.0 client id
+                .build();
+        // Build a GoogleSignInClient with the options specified by gso.
+        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
+        // Check for existing Google Sign In account, if the user is already signed in
+        // the GoogleSignInAccount will be non-null.
+        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
+        if(account!=null){
+            //do something with account
+            Toast.makeText(this, "Already Signed In", Toast.LENGTH_LONG).show();
+        }
+
 
         //check if were are already logged in
         /*
@@ -54,20 +82,35 @@ public class LoginActivity extends AppCompatActivity {
             Toast.makeText(getApplicationContext(), "You are already Logged in, Redirecting Home", Toast.LENGTH_SHORT).show();
         }
         */
-            loginInputEmail = (EditText) findViewById(R.id.login_input_email);
-            loginInputPassword = (EditText) findViewById(R.id.login_input_password);
-            btnlogin = (Button) findViewById(R.id.btn_login);
-            //btnLinkSignup = (Button) findViewById(R.id.btn_link_signup);
-            // Progress dialog
-            progressDialog = new ProgressDialog(this);
-            progressDialog.setCancelable(false);
 
-            btnlogin.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
+        loginInputEmail = (EditText) findViewById(R.id.login_input_email);
+        loginInputPassword = (EditText) findViewById(R.id.login_input_password);
+        btnlogin = (Button) findViewById(R.id.btn_login);
+        gbtnlogin = findViewById(R.id.sign_in_button);
+        //btnLinkSignup = (Button) findViewById(R.id.btn_link_signup);
+        // Progress dialog
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setCancelable(false);
+
+        // onclick for google login button
+        gbtnlogin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                signIn();
+            }
+        });
+
+        btnlogin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(!loginInputEmail.getText().toString().equals("") && !loginInputPassword.getText().toString().equals("")){
                     loginUser(loginInputEmail.getText().toString(), loginInputPassword.getText().toString());
+                } else {
+                    Toast.makeText(getApplicationContext(), "Enter valid credentials!", Toast.LENGTH_LONG).show();
                 }
-            });
+
+            }
+        });
 /*
             btnLinkSignup.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -80,6 +123,46 @@ public class LoginActivity extends AppCompatActivity {
 */
         }
 
+    private void signIn() {
+        Intent signInIntent = mGoogleSignInClient.getSignInIntent();
+        startActivityForResult(signInIntent, RC_SIGN_IN);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        // Result returned from launching the Intent from GoogleSignInClient.getSignInIntent(...);
+        if (requestCode == RC_SIGN_IN) {
+            // The Task returned from this call is always completed, no need to attach
+            // a listener.
+            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+            handleSignInResult(task);
+        }
+    }
+
+    private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
+        try {
+            progressDialog.setMessage("Logging you in...");
+            showDialog();
+            Log.i("TESTINGLOGIN", "BEFOREGETRESULT");
+            GoogleSignInAccount account = completedTask.getResult(ApiException.class);
+            Log.i("TESTINGLOGIN", "AFTERGETRESULT");
+            // Signed in successfully, show authenticated UI.
+            //updateUI(account);
+            hideDialog();
+            Toast.makeText(getApplicationContext(), "Successful Login, Redirecting Home", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+            startActivity(intent);
+        } catch (ApiException e) {
+            // The ApiException status code indicates the detailed failure reason.
+            // Please refer to the GoogleSignInStatusCodes class reference for more information.
+            Log.w(TAG, "signInResult:failed code=" + e.getStatusCode());
+            //updateUI(null);
+        }
+    }
+
+    // Phase 2
     private void loginUser(final String email,final String password){
         progressDialog.setMessage("Logging you in...");
         showDialog();
@@ -89,8 +172,12 @@ public class LoginActivity extends AppCompatActivity {
             for (User c : User.TestUsers)
                 user = c;
         else {
+            user = new User(0, "","","","");
+            Log.i("TESTING1", "email is "+email);
             user.email = email;
             user.setPassword(password);
+            Log.i("TESTING2", "email: "+email+"  password: "+password);
+
             VolleySingleton volleySingleton = VolleySingleton.getInstance(this);
             StringRequest stringRequest = new StringRequest(Request.Method.GET, VolleySingleton.usersUrl,
                     new Response.Listener<String>() {
@@ -103,10 +190,16 @@ public class LoginActivity extends AppCompatActivity {
                         @Override
                         public void onErrorResponse(VolleyError error) {
                             Log.d("TheBuzz", "Error getting messages from server");
+                            hideDialog();
+                            Toast.makeText(getApplicationContext(), "Error getting messages from server", Toast.LENGTH_LONG).show();
+                            return;
                         }
                     }
             );
+            Log.i("TESTING3", "After volleysingleton created");
+
             volleySingleton.addRequest(stringRequest);
+            Log.i("TESTING4", "After volleysingleton request");
         }
     }
 
@@ -120,6 +213,8 @@ public class LoginActivity extends AppCompatActivity {
             }
         } catch (final JSONException e) {
             Log.d("TheBuzz", "Error parsing JSON user:" + e.getMessage());
+            Toast.makeText(getApplicationContext(), "Error parsing JSON user: "+e.getMessage(), Toast.LENGTH_LONG).show();
+            hideDialog();
             return;
         }
         Log.d("TheBuzz", "Successfully parsed Users");
@@ -131,7 +226,7 @@ public class LoginActivity extends AppCompatActivity {
                 SharedPreferences.Editor editor = settings.edit();
                 editor.putString("logged", "logged");
                 editor.commit();
-                Toast.makeText(getApplicationContext(), "Successfull Login, Redirecting Home", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Successful Login, Redirecting Home", Toast.LENGTH_SHORT).show();
 
                 //set the rest of the user fields
                 user = users.get(i);

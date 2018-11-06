@@ -109,7 +109,7 @@ public class ShowCommentsActivity extends AppCompatActivity {
             return;
         }
         Log.d("TheBuzz", "Successfully parsed Comments");
-        RecyclerView rv = (RecyclerView) findViewById(R.id.comments_list_view);
+        RecyclerView rv = findViewById(R.id.comments_list_view);
         rv.getAdapter().notifyDataSetChanged();
     }
 
